@@ -3,7 +3,6 @@
 //
 
 #import "NSObject+OWS.h"
-#import "TSYapDatabaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

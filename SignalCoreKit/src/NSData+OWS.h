@@ -2,8 +2,6 @@
 //  Copyright (c) 2018 Open Whisper Systems. All rights reserved.
 //
 
-#import <AxolotlKit/NSData+SPK.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSData (OWS)
@@ -20,6 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSData *)dataFromBase64String:(NSString *)aString;
 
 - (NSString *)base64EncodedString;
+
+#pragma mark - 
+
+/**
+ * Compares data in constant time so as to help avoid potential timing attacks.
+ */
+- (BOOL)ows_constantTimeIsEqualToData:(NSData *)other;
 
 @end
 

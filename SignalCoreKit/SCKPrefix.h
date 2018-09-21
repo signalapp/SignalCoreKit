@@ -4,7 +4,8 @@
 
 #import <Foundation/Foundation.h>
 
-@import CocoaLumberjack;
+//@import CocoaLumberjack;
+#import <CocoaLumberjack/CocoaLumberjack.h>
 
 #ifdef DEBUG
 static const NSUInteger ddLogLevel = DDLogLevelAll;
@@ -12,5 +13,4 @@ static const NSUInteger ddLogLevel = DDLogLevelAll;
 static const NSUInteger ddLogLevel = DDLogLevelInfo;
 #endif
 #import "NSObject+OWS.h"
-#import "OWSAnalytics.h"
 #import "OWSAsserts.h"
