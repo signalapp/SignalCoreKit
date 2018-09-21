@@ -6,6 +6,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#ifdef DEBUG
+static const NSUInteger ddLogLevel = DDLogLevelAll;
+#else
+static const NSUInteger ddLogLevel = DDLogLevelInfo;
+#endif
+
 static inline BOOL ShouldLogVerbose()
 {
     return ddLogLevel >= DDLogLevelVerbose;

@@ -9,12 +9,9 @@
 /* Begin PBXBuildFile section */
 		346941302155549700B5BFAD /* SignalCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 346941262155549700B5BFAD /* SignalCoreKit.framework */; };
 		346941352155549700B5BFAD /* SignalCoreKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346941342155549700B5BFAD /* SignalCoreKitTests.swift */; };
-		346941372155549700B5BFAD /* SignalCoreKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 346941292155549700B5BFAD /* SignalCoreKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3469415321555FC600B5BFAD /* OWSLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 3469414221555FC500B5BFAD /* OWSLogger.m */; };
-		3469415421555FC600B5BFAD /* OWSSwiftUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3469414321555FC500B5BFAD /* OWSSwiftUtils.swift */; };
 		3469415521555FC600B5BFAD /* NSData+OWS.m in Sources */ = {isa = PBXBuildFile; fileRef = 3469414421555FC500B5BFAD /* NSData+OWS.m */; };
 		3469415621555FC600B5BFAD /* NSString+SSK.m in Sources */ = {isa = PBXBuildFile; fileRef = 3469414521555FC500B5BFAD /* NSString+SSK.m */; };
-		3469415721555FC600B5BFAD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3469414621555FC500B5BFAD /* Logger.swift */; };
 		3469415821555FC600B5BFAD /* Threading.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469414721555FC500B5BFAD /* Threading.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3469415921555FC600B5BFAD /* OWSAsserts.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469414821555FC500B5BFAD /* OWSAsserts.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3469415A21555FC600B5BFAD /* NSObject+OWS.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469414921555FC500B5BFAD /* NSObject+OWS.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -27,6 +24,9 @@
 		3469416221555FC600B5BFAD /* SCKPrefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469415121555FC500B5BFAD /* SCKPrefix.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3469416521555FCF00B5BFAD /* SCKExampleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 3469416421555FCF00B5BFAD /* SCKExampleTest.m */; };
 		346941672155629600B5BFAD /* iOSVersions.h in Headers */ = {isa = PBXBuildFile; fileRef = 346941662155629600B5BFAD /* iOSVersions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3469416D2155666500B5BFAD /* SignalCoreKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469416C2155666500B5BFAD /* SignalCoreKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34694170215569AC00B5BFAD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3469416F215569AC00B5BFAD /* Logger.swift */; };
+		3469417121556A1900B5BFAD /* SignalCoreKit-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 3469416E2155678A00B5BFAD /* SignalCoreKit-Prefix.pch */; };
 		8D576B9A95BE57B0A5CE0FAA /* Pods_SignalCoreKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3C7A8C4D81D72656E0CA9CA /* Pods_SignalCoreKitTests.framework */; };
 		9A7B21B018F1545D4F6A8AEE /* Pods_SignalCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 059E5BB35C2CCFF8A150826C /* Pods_SignalCoreKit.framework */; };
 /* End PBXBuildFile section */
@@ -46,16 +46,13 @@
 		2019AB9BF39012366F9E4E2B /* Pods-SignalCoreKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SignalCoreKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-SignalCoreKit/Pods-SignalCoreKit.release.xcconfig"; sourceTree = "<group>"; };
 		29088C764EB6CEF3420ECBCC /* Pods-SignalCoreKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SignalCoreKitTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SignalCoreKitTests/Pods-SignalCoreKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		346941262155549700B5BFAD /* SignalCoreKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SignalCoreKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		346941292155549700B5BFAD /* SignalCoreKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SignalCoreKit.h; sourceTree = "<group>"; };
 		3469412A2155549700B5BFAD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3469412F2155549700B5BFAD /* SignalCoreKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SignalCoreKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		346941342155549700B5BFAD /* SignalCoreKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalCoreKitTests.swift; sourceTree = "<group>"; };
 		346941362155549700B5BFAD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3469414221555FC500B5BFAD /* OWSLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWSLogger.m; sourceTree = "<group>"; };
-		3469414321555FC500B5BFAD /* OWSSwiftUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OWSSwiftUtils.swift; sourceTree = "<group>"; };
 		3469414421555FC500B5BFAD /* NSData+OWS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+OWS.m"; sourceTree = "<group>"; };
 		3469414521555FC500B5BFAD /* NSString+SSK.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+SSK.m"; sourceTree = "<group>"; };
-		3469414621555FC500B5BFAD /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		3469414721555FC500B5BFAD /* Threading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Threading.h; sourceTree = "<group>"; };
 		3469414821555FC500B5BFAD /* OWSAsserts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWSAsserts.h; sourceTree = "<group>"; };
 		3469414921555FC500B5BFAD /* NSObject+OWS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+OWS.h"; sourceTree = "<group>"; };
@@ -68,6 +65,10 @@
 		3469415121555FC500B5BFAD /* SCKPrefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCKPrefix.h; sourceTree = "<group>"; };
 		3469416421555FCF00B5BFAD /* SCKExampleTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCKExampleTest.m; sourceTree = "<group>"; };
 		346941662155629600B5BFAD /* iOSVersions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOSVersions.h; sourceTree = "<group>"; };
+		3469416C2155666500B5BFAD /* SignalCoreKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SignalCoreKit.h; sourceTree = "<group>"; };
+		3469416E2155678A00B5BFAD /* SignalCoreKit-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SignalCoreKit-Prefix.pch"; sourceTree = "<group>"; };
+		3469416F215569AC00B5BFAD /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		3469419621556EEF00B5BFAD /* SignalCoreKit-BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SignalCoreKit-BridgingHeader.h"; sourceTree = "<group>"; };
 		38BC32F33F022521E6802C2E /* Pods-SignalCoreKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SignalCoreKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SignalCoreKit/Pods-SignalCoreKit.debug.xcconfig"; sourceTree = "<group>"; };
 		B3C7A8C4D81D72656E0CA9CA /* Pods_SignalCoreKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SignalCoreKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EDD89206E6164C631E03883E /* Pods-SignalCoreKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SignalCoreKitTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-SignalCoreKitTests/Pods-SignalCoreKitTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -128,7 +129,8 @@
 			children = (
 				3469412A2155549700B5BFAD /* Info.plist */,
 				3469415121555FC500B5BFAD /* SCKPrefix.h */,
-				346941292155549700B5BFAD /* SignalCoreKit.h */,
+				3469419621556EEF00B5BFAD /* SignalCoreKit-BridgingHeader.h */,
+				3469416E2155678A00B5BFAD /* SignalCoreKit-Prefix.pch */,
 				3469414021555FC500B5BFAD /* src */,
 			);
 			path = SignalCoreKit;
@@ -148,7 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				346941662155629600B5BFAD /* iOSVersions.h */,
-				3469414621555FC500B5BFAD /* Logger.swift */,
+				3469416F215569AC00B5BFAD /* Logger.swift */,
 				3469414C21555FC500B5BFAD /* NSData+OWS.h */,
 				3469414421555FC500B5BFAD /* NSData+OWS.m */,
 				3469414921555FC500B5BFAD /* NSObject+OWS.h */,
@@ -159,7 +161,7 @@
 				3469414E21555FC500B5BFAD /* OWSAsserts.m */,
 				3469414A21555FC500B5BFAD /* OWSLogger.h */,
 				3469414221555FC500B5BFAD /* OWSLogger.m */,
-				3469414321555FC500B5BFAD /* OWSSwiftUtils.swift */,
+				3469416C2155666500B5BFAD /* SignalCoreKit.h */,
 				3469414721555FC500B5BFAD /* Threading.h */,
 				3469414F21555FC500B5BFAD /* Threading.m */,
 			);
@@ -195,8 +197,9 @@
 				346941672155629600B5BFAD /* iOSVersions.h in Headers */,
 				3469416121555FC600B5BFAD /* NSString+SSK.h in Headers */,
 				3469415A21555FC600B5BFAD /* NSObject+OWS.h in Headers */,
+				3469417121556A1900B5BFAD /* SignalCoreKit-Prefix.pch in Headers */,
 				3469416221555FC600B5BFAD /* SCKPrefix.h in Headers */,
-				346941372155549700B5BFAD /* SignalCoreKit.h in Headers */,
+				3469416D2155666500B5BFAD /* SignalCoreKit.h in Headers */,
 				3469415B21555FC600B5BFAD /* OWSLogger.h in Headers */,
 				3469415D21555FC600B5BFAD /* NSData+OWS.h in Headers */,
 				3469415821555FC600B5BFAD /* Threading.h in Headers */,
@@ -258,6 +261,7 @@
 				TargetAttributes = {
 					346941252155549700B5BFAD = {
 						CreatedOnToolsVersion = 9.4.1;
+						LastSwiftMigration = 0940;
 					};
 					3469412E2155549700B5BFAD = {
 						CreatedOnToolsVersion = 9.4.1;
@@ -361,14 +365,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3469415721555FC600B5BFAD /* Logger.swift in Sources */,
 				3469416021555FC600B5BFAD /* Threading.m in Sources */,
 				3469415321555FC600B5BFAD /* OWSLogger.m in Sources */,
 				3469415621555FC600B5BFAD /* NSString+SSK.m in Sources */,
 				3469415E21555FC600B5BFAD /* NSObject+OWS.m in Sources */,
+				34694170215569AC00B5BFAD /* Logger.swift in Sources */,
 				3469415F21555FC600B5BFAD /* OWSAsserts.m in Sources */,
 				3469415521555FC600B5BFAD /* NSData+OWS.m in Sources */,
-				3469415421555FC600B5BFAD /* OWSSwiftUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -444,7 +447,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -501,7 +504,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -516,6 +519,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 38BC32F33F022521E6802C2E /* Pods-SignalCoreKit.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -523,7 +527,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = SignalCoreKit/SCKPrefix.h;
+				GCC_PREFIX_HEADER = "SignalCoreKit/SignalCoreKit-Prefix.pch";
 				INFOPLIST_FILE = SignalCoreKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -534,6 +538,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalCoreKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -543,6 +549,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2019AB9BF39012366F9E4E2B /* Pods-SignalCoreKit.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -550,7 +557,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = SignalCoreKit/SCKPrefix.h;
+				GCC_PREFIX_HEADER = "SignalCoreKit/SignalCoreKit-Prefix.pch";
 				INFOPLIST_FILE = SignalCoreKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -561,6 +568,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalCoreKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
