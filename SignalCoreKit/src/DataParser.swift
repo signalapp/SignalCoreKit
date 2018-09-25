@@ -4,13 +4,13 @@
 
 import Foundation
 
-public enum SSKDataParserError: Error {
+public enum DataParserError: Error {
     case overflow(description : String)
 }
 
-// MARK: - SSKDataParser
+// MARK: - DataParser
 
-@objc public class SSKDataParser: NSObject {
+@objc public class DataParser: NSObject {
 
     private let data: Data
     private var cursor: UInt = 0
@@ -22,9 +22,9 @@ public enum SSKDataParserError: Error {
     @objc public func nextData(length: UInt, name: String?=nil) throws -> Data {
         guard cursor + length <= data.count else {
             guard let name = name else {
-                throw SSKDataParserError.overflow(description: "\(logTag) invalid data read")
+                throw DataParserError.overflow(description: "\(logTag) invalid data read")
             }
-            throw SSKDataParserError.overflow(description: "\(logTag) invalid data read: \(name)")
+            throw DataParserError.overflow(description: "\(logTag) invalid data read: \(name)")
         }
 
         let endIndex = cursor + length
