@@ -4,13 +4,13 @@
 
 import Foundation
 
-public enum DataParserError: Error {
+public enum OWSDataParserError: Error {
     case overflow(description : String)
 }
 
-// MARK: - DataParser
+// MARK: - OWSDataParser
 
-@objc public class DataParser: NSObject {
+@objc public class OWSDataParser: NSObject {
 
     private let data: Data
     private var cursor: UInt = 0
@@ -22,9 +22,9 @@ public enum DataParserError: Error {
     @objc public func nextData(length: UInt, name: String?=nil) throws -> Data {
         guard cursor + length <= data.count else {
             guard let name = name else {
-                throw DataParserError.overflow(description: "\(logTag) invalid data read")
+                throw OWSDataParserError.overflow(description: "\(logTag) invalid data read")
             }
-            throw DataParserError.overflow(description: "\(logTag) invalid data read: \(name)")
+            throw OWSDataParserError.overflow(description: "\(logTag) invalid data read: \(name)")
         }
 
         let endIndex = cursor + length

@@ -6,7 +6,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// This constant must be defined _before_ we import OWSLogger.h.
 #ifdef DEBUG
 static const NSUInteger ddLogLevel = DDLogLevelAll;
 #else
