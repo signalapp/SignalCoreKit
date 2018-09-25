@@ -2,7 +2,7 @@
 //  Copyright (c) 2018 Open Whisper Systems. All rights reserved.
 //
 
-#import "OWSLogger.h"
+#import "OWSLogs.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -186,6 +186,12 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
 #define ows_sub_overflow(a, b, resultRef)                                                                              \
     do {                                                                                                               \
         BOOL _didOverflow = __builtin_sub_overflow(a, b, resultRef);                                                   \
+        OWSAssert(!_didOverflow);                                                                                      \
+    } while (NO)
+
+#define ows_mul_overflow(a, b, resultRef)                                                                              \
+    do {                                                                                                               \
+        BOOL _didOverflow = __builtin_mul_overflow(a, b, resultRef);                                                   \
         OWSAssert(!_didOverflow);                                                                                      \
     } while (NO)
 

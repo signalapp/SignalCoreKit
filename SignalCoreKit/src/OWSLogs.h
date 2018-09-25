@@ -6,6 +6,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// This constant must be defined _before_ we import OWSLogger.h.
 #ifdef DEBUG
 static const NSUInteger ddLogLevel = DDLogLevelAll;
 #else
@@ -53,7 +54,7 @@ static inline BOOL ShouldLogError()
 @end
 
 #define OWSLogPrefix()                                                                                                 \
-    ([NSString stringWithFormat:@"[%@:%d %s]: ",                                                                    \
+    ([NSString stringWithFormat:@"[%@:%d %s]: ",                                                                       \
                [[NSString stringWithUTF8String:__FILE__] lastPathComponent],                                           \
                __LINE__,                                                                                               \
                __PRETTY_FUNCTION__])

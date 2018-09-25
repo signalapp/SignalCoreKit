@@ -3,6 +3,5 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "NSObject+OWS.h"
-#import "OWSAsserts.h"
+#import <SignalCoreKit/NSObject+OWS.h>
+#import <SignalCoreKit/OWSAsserts.h>

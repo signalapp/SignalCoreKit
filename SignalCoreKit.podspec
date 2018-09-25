@@ -25,7 +25,10 @@ A Swift & Objective-C library used by other Signal libraries.
   #s.ios.deployment_target = '9.0'
   #s.osx.deployment_target = '10.9'
   s.requires_arc = true
-  s.source_files = 'SignalCoreKit/src/**/*.{h,m,mm,swift}'
+
+  s.source_files  = 'SignalCoreKit/src/**/*.{h,m,mm,swift}', 'SignalCoreKit/Private/**/*.{h,m,mm,swift}'
+
+  s.public_header_files = 'SignalCoreKit/src/*.h', 'SignalCoreKit/src/**/*.h'
 
   # We want to use modules to avoid clobbering CocoaLumberjack macros defined
   # by other OWS modules which *also* import CocoaLumberjack. But because we
@@ -39,6 +42,7 @@ A Swift & Objective-C library used by other Signal libraries.
   s.resources = ["SignalCoreKit/Resources/Certificates/*"]
 
   s.dependency 'CocoaLumberjack'
+
 
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = 'SignalCoreKitTests/src/**/*.{h,m,swift}'
