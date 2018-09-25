@@ -28,7 +28,7 @@ A Swift & Objective-C library used by other Signal libraries.
 
   s.source_files  = 'SignalCoreKit/src/**/*.{h,m,mm,swift}', 'SignalCoreKit/Private/**/*.{h,m,mm,swift}'
 
-  s.public_header_files = 'SignalCoreKit/src/*.h', 'SignalCoreKit/src/**/*.h'
+  s.public_header_files = 'SignalCoreKit/src/**/*.h'
 
   # We want to use modules to avoid clobbering CocoaLumberjack macros defined
   # by other OWS modules which *also* import CocoaLumberjack. But because we
@@ -39,10 +39,8 @@ A Swift & Objective-C library used by other Signal libraries.
   s.prefix_header_file = 'SignalCoreKit/SCKPrefix.h'
   s.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DSQLITE_HAS_CODEC' }
 
-  s.resources = ["SignalCoreKit/Resources/Certificates/*"]
-
   s.dependency 'CocoaLumberjack'
-
+  s.dependency 'GRKOpenSSLFramework'
 
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = 'SignalCoreKitTests/src/**/*.{h,m,swift}'
