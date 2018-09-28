@@ -3,8 +3,8 @@
 //
 
 #import "Cryptography.h"
-#import <XCTest/XCTest.h>
 #import <SignalCoreKit/NSData+OWS.h>
+#import <XCTest/XCTest.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
