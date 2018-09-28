@@ -25,6 +25,9 @@ extern const NSUInteger SCKErrorCodeFailedToDecryptMessage;
  */
 + (nullable instancetype)keyWithData:(NSData *)data;
 
+// Like keyWithData, but on error simply returns nil.
++ (nullable instancetype)keyWithDataIfValid:(NSData *)data;
+
 /// The raw key material
 @property (nonatomic, readonly) NSData *keyData;
 
@@ -112,6 +115,14 @@ typedef NS_ENUM(NSInteger, TSMACType) {
                                  additionalAuthenticatedData:(nullable NSData *)additionalAuthenticatedData
                                                          key:(OWSAES256Key *)key
     NS_SWIFT_NAME(encryptAESGCM(plainTextData:additionalAuthenticatedData:key:));
+
++ (nullable AES25GCMEncryptionResult *)encryptAESGCMWithData:(NSData *)plaintext
+                                        initializationVector:(NSData *)initializationVector
+                                 additionalAuthenticatedData:(nullable NSData *)additionalAuthenticatedData
+                                                         key:(OWSAES256Key *)key
+    NS_SWIFT_NAME(encryptAESGCM(plainTextData:initializationVector:additionalAuthenticatedData
+:key
+:));
 
 + (nullable NSData *)decryptAESGCMWithInitializationVector:(NSData *)initializationVector
                                                 ciphertext:(NSData *)ciphertext
