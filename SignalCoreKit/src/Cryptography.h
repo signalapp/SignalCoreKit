@@ -120,9 +120,7 @@ typedef NS_ENUM(NSInteger, TSMACType) {
                                         initializationVector:(NSData *)initializationVector
                                  additionalAuthenticatedData:(nullable NSData *)additionalAuthenticatedData
                                                          key:(OWSAES256Key *)key
-    NS_SWIFT_NAME(encryptAESGCM(plainTextData:initializationVector:additionalAuthenticatedData
-:key
-:));
+    NS_SWIFT_NAME(encryptAESGCM(plainTextData:initializationVector:additionalAuthenticatedData:key:));
 
 + (nullable NSData *)decryptAESGCMWithInitializationVector:(NSData *)initializationVector
                                                 ciphertext:(NSData *)ciphertext
