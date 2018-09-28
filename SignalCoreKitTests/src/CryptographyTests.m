@@ -3,6 +3,7 @@
 //
 
 #import "Cryptography.h"
+#import "Randomness.h"
 #import <SignalCoreKit/NSData+OWS.h>
 #import <XCTest/XCTest.h>
 
@@ -106,13 +107,11 @@ NS_ASSUME_NONNULL_BEGIN
     NSData *badKey = [Cryptography generateRandomBytes:64];
 
     NSError *error;
-    NSData *_Nullable decryptedData = [Cryptography decryptAttachment:cipherText
-                                                              withKey:badKey
-                                                               digest:generatedDigest
-                                                         unpaddedSize:(UInt32)plainTextData.length
-                                                                error:&error];
-    XCTAssertNotNil(error);
-    XCTAssertNil(decryptedData);
+    XCTAssertThrows([Cryptography decryptAttachment:cipherText
+                                            withKey:badKey
+                                             digest:generatedDigest
+                                       unpaddedSize:(UInt32)plainTextData.length
+                                              error:&error]);
 }
 
 - (void)testDecryptAttachmentWithBadDigest
@@ -133,13 +132,11 @@ NS_ASSUME_NONNULL_BEGIN
     NSData *badDigest = [Cryptography generateRandomBytes:32];
 
     NSError *error;
-    NSData *_Nullable decryptedData = [Cryptography decryptAttachment:cipherText
-                                                              withKey:generatedKey
-                                                               digest:badDigest
-                                                         unpaddedSize:(UInt32)plainTextData.length
-                                                                error:&error];
-    XCTAssertNotNil(error);
-    XCTAssertNil(decryptedData);
+    XCTAssertThrows([Cryptography decryptAttachment:cipherText
+                                            withKey:generatedKey
+                                             digest:badDigest
+                                       unpaddedSize:(UInt32)plainTextData.length
+                                              error:&error]);
 }
 
 - (void)testComputeSHA256Digest
