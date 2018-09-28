@@ -43,7 +43,7 @@ public func owsFail(_ logMessage: String,
                     file: String = #file,
                     function: String = #function,
                     line: Int = #line) -> Never {
-    
+
     owsFailDebug(logMessage, file: file, function: function, line: line)
     let formattedMessage = owsFormatLogMessage(logMessage, file: file, function: function, line: line)
     fatalError(formattedMessage)
@@ -56,4 +56,3 @@ public func notImplemented(file: String = #file,
                            line: Int = #line) -> Never {
     owsFail("Method not implemented.", file: file, function: function, line: line)
 }
- 

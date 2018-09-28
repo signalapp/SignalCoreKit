@@ -6,6 +6,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#ifdef DEBUG
+static const NSUInteger ddLogLevel = DDLogLevelAll;
+#else
+static const NSUInteger ddLogLevel = DDLogLevelInfo;
+#endif
+
 static inline BOOL ShouldLogVerbose()
 {
     return ddLogLevel >= DDLogLevelVerbose;
@@ -47,7 +53,7 @@ static inline BOOL ShouldLogError()
 @end
 
 #define OWSLogPrefix()                                                                                                 \
-    ([NSString stringWithFormat:@"[%@:%d %s]: ",                                                                    \
+    ([NSString stringWithFormat:@"[%@:%d %s]: ",                                                                       \
                [[NSString stringWithUTF8String:__FILE__] lastPathComponent],                                           \
                __LINE__,                                                                                               \
                __PRETTY_FUNCTION__])
