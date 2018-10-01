@@ -48,7 +48,7 @@ const NSUInteger kAES256_KeyByteLength = 32;
 + (nullable instancetype)keyWithData:(NSData *)data
 {
     if (data.length != kAES256_KeyByteLength) {
-        OWSFailDebug(@"Invalid key length: %lu", (unsigned long)data.length);
+        OWSLogError(@"Invalid key length: %lu", (unsigned long)data.length);
         return nil;
     }
 
@@ -632,6 +632,20 @@ const NSUInteger kAES256_KeyByteLength = 32;
                                                          key:(OWSAES256Key *)key
 {
     NSData *initializationVector = [Cryptography generateRandomBytes:kAESGCM256_IVLength];
+
+    return [self encryptAESGCMWithData:plaintext
+                  initializationVector:initializationVector
+           additionalAuthenticatedData:additionalAuthenticatedData
+                                   key:key];
+}
+
++ (nullable AES25GCMEncryptionResult *)encryptAESGCMWithData:(NSData *)plaintext
+                                        initializationVector:(NSData *)initializationVector
+                                 additionalAuthenticatedData:(nullable NSData *)additionalAuthenticatedData
+                                                         key:(OWSAES256Key *)key
+{
+    OWSAssert(initializationVector.length == kAESGCM256_IVLength);
+
     NSMutableData *ciphertext = [NSMutableData dataWithLength:plaintext.length];
     NSMutableData *authTag = [NSMutableData dataWithLength:kAESGCM256_TagLength];
 
