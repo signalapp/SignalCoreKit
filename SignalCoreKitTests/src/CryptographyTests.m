@@ -297,13 +297,10 @@ NS_ASSUME_NONNULL_BEGIN
 {
     NSString *plainText = @"Super🔥secret🔥test🔥data🏁🏁";
     NSData *plainTextData = [plainText dataUsingEncoding:NSUTF8StringEncoding];
-    NSMutableData *initializationVector = [NSMutableData new];
-    initializationVector.length = kAESGCM256_IVLength;
+    NSMutableData *initializationVector = [NSMutableData dataWithLength:kAESGCM256_IVLength];
     XCTAssertTrue(initializationVector.length == kAESGCM256_IVLength);
-    uint8_t ivBytes[kAESGCM256_IVLength];
-    [initializationVector getBytes:ivBytes range:NSMakeRange(0, kAESGCM256_IVLength)];
     for (NSUInteger i = 0; i < initializationVector.length; i++) {
-        XCTAssertEqual(ivBytes[i], 0);
+        XCTAssertEqual(initializationVector.bytes[i], 0);
     }
 
     OWSAES256Key *key = [OWSAES256Key new];

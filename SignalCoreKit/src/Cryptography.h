@@ -25,9 +25,6 @@ extern const NSUInteger SCKErrorCodeFailedToDecryptMessage;
  */
 + (nullable instancetype)keyWithData:(NSData *)data;
 
-// Like keyWithData, but on error simply returns nil.
-+ (nullable instancetype)keyWithDataIfValid:(NSData *)data;
-
 /// The raw key material
 @property (nonatomic, readonly) NSData *keyData;
 

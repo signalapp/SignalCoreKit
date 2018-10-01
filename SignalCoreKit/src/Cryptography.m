@@ -48,16 +48,7 @@ const NSUInteger kAES256_KeyByteLength = 32;
 + (nullable instancetype)keyWithData:(NSData *)data
 {
     if (data.length != kAES256_KeyByteLength) {
-        OWSFailDebug(@"Invalid key length: %lu", (unsigned long)data.length);
-        return nil;
-    }
-
-    return [[self alloc] initWithData:data];
-}
-
-+ (nullable instancetype)keyWithDataIfValid:(NSData *)data
-{
-    if (data.length != kAES256_KeyByteLength) {
+        OWSLogError(@"Invalid key length: %lu", (unsigned long)data.length);
         return nil;
     }
 
