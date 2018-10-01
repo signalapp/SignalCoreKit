@@ -299,8 +299,9 @@ NS_ASSUME_NONNULL_BEGIN
     NSData *plainTextData = [plainText dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *initializationVector = [NSMutableData dataWithLength:kAESGCM256_IVLength];
     XCTAssertTrue(initializationVector.length == kAESGCM256_IVLength);
+    const uint8_t *ivBytes = initializationVector.bytes;
     for (NSUInteger i = 0; i < initializationVector.length; i++) {
-        XCTAssertEqual(initializationVector.bytes[i], 0);
+        XCTAssertEqual(ivBytes[i], 0);
     }
 
     OWSAES256Key *key = [OWSAES256Key new];
