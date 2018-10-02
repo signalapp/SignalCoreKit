@@ -124,12 +124,15 @@ typedef NS_ENUM(NSInteger, TSMACType) {
                                additionalAuthenticatedData:(nullable NSData *)additionalAuthenticatedData
                                                    authTag:(NSData *)authTagFromEncrypt
                                                        key:(OWSAES256Key *)key
-    NS_SWIFT_NAME(decryptAESCGM(withInitializationVector:ciphertext:additionalAuthenticatedData:authTag:key:));
+    NS_SWIFT_NAME(decryptAESGCM(withInitializationVector:ciphertext:additionalAuthenticatedData:authTag:key:));
 
 #pragma mark - Profiles
 
-+ (nullable NSData *)encryptAESGCMWithProfileData:(NSData *)plaintextData key:(OWSAES256Key *)key;
-+ (nullable NSData *)decryptAESGCMWithProfileData:(NSData *)encryptedData key:(OWSAES256Key *)key;
++ (nullable NSData *)encryptAESGCMWithProfileData:(NSData *)plaintextData key:(OWSAES256Key *)key
+    NS_SWIFT_NAME(encryptAESGCMProfileData(plainTextData:key:));
+
++ (nullable NSData *)decryptAESGCMWithProfileData:(NSData *)encryptedData key:(OWSAES256Key *)key
+    NS_SWIFT_NAME(decryptAESGCMProfileData(encryptedData:key:));
 
 #pragma mark - AES-CTR
 
