@@ -20,6 +20,7 @@ NSError *SCKExceptionWrapperErrorMake(NSException *exception)
 
 + (BOOL)tryBlock:(void (^)(void))block error:(NSError **)outError
 {
+    OWSAssertDebug(outError);
     @try {
         block();
         return YES;
