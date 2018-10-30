@@ -17,32 +17,32 @@ NSError *SCKExceptionWrapperErrorMake(NSException *exception);
 
 /// Naming conventions:
 ///
-/// Every objc method that can throw an exception should be prefixed with `try_`.
-/// e.g. `try_foo` and `try_fooWithBar:bar`
+/// Every objc method that can throw an exception should be prefixed with `throws_`.
+/// e.g. `throws_foo` and `throws_fooWithBar:bar`
 ///
-/// Every objc method that *calls* an uncaught `try_` method can throw an exception,
-/// so transitively, it should be a `try_method`
+/// Every objc method that *calls* an uncaught `throws_` method can throw an exception,
+/// so transitively, it should be a `throws_method`
 ///
 /// WRONG!:
 ///
 ///     -(void)bar
 ///     {
-///         [foo try_foo];
+///         [foo throws_foo];
 ///     }
 ///
 /// RIGHT!:
 ///
-///     -(void)try_bar
+///     -(void)throws_bar
 ///     {
-///         [foo try_foo];
+///         [foo throws_foo];
 ///     }
 ///
 /// WRONG!:
 ///
-///     -(void)try_bar
+///     -(void)throws_bar
 ///     {
 ///         @try {
-///             [foo try_foo];
+///             [foo throws_foo];
 ///         } @catch(NSException *exception) {
 ///             // all exceptions are caught,
 ///             // so bar doesn't throw.
@@ -55,7 +55,7 @@ NSError *SCKExceptionWrapperErrorMake(NSException *exception);
 ///     -(void)bar
 ///     {
 ///         @try {
-///             [foo try_foo];
+///             [foo throws_foo];
 ///         } @catch(NSException *exception) {
 ///             // all exceptions are caught,
 ///             // so bar doesn't throw.
@@ -64,7 +64,7 @@ NSError *SCKExceptionWrapperErrorMake(NSException *exception);
 ///     }
 ///
 /// Since initializers must start with the word `init`, an initializer which throws is labeled
-/// somewhat awkwardly as: `init_try_foo` or `init_try_withFoo:`
+/// somewhat awkwardly as: `init_throws_foo` or `init_throws_withFoo:`
 ///
 ///
 /// Any method that can throw an objc exception must not be called from swift, so must be marked
@@ -74,13 +74,13 @@ NSError *SCKExceptionWrapperErrorMake(NSException *exception);
 ///
 ///     -(BOOL)barAndReturnError:(NSError **)outError
 ///     {
-///         return [SCKExceptionWrapper tryBlock:^{ [self try_bar]; }
+///         return [SCKExceptionWrapper tryBlock:^{ [self throws_bar]; }
 ///                                        error:outError];
 ///     }
 ///
-///     -(void)try_bar
+///     -(void)throws_bar
 ///     {
-///         [foo try_foo];
+///         [foo throws_foo];
 ///     }
 
 NS_SWIFT_UNAVAILABLE("throws objc exceptions")
