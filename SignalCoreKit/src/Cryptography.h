@@ -155,6 +155,8 @@ typedef NS_ENUM(NSInteger, TSMACType) {
 
 + (void)seedRandom;
 
++ (unsigned long)paddedSize:(unsigned long)unpaddedSize NS_SWIFT_NAME(paddedSize(unpaddedSize:));
+
 @end
 
 NS_ASSUME_NONNULL_END

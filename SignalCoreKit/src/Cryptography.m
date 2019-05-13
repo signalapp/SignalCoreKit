@@ -560,7 +560,7 @@ const NSUInteger kAES256_KeyByteLength = 32;
 
 + (unsigned long)paddedSize:(unsigned long)unpaddedSize
 {
-    return pow(2, ceil( log2( unpaddedSize )));
+    return MAX(541, floor( pow(1.05, ceil( log(unpaddedSize) / log(1.05)))));
 }
 
 + (nullable NSData *)encryptAttachmentData:(NSData *)attachmentData
