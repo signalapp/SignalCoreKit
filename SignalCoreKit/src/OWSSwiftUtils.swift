@@ -43,6 +43,7 @@ public func owsFail(_ logMessage: String,
                     file: String = #file,
                     function: String = #function,
                     line: Int = #line) -> Never {
+    OWSSwiftUtils.logStackTrace()
     owsFailDebug(logMessage, file: file, function: function, line: line)
     let formattedMessage = owsFormatLogMessage(logMessage, file: file, function: function, line: line)
     fatalError(formattedMessage)
