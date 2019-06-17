@@ -74,6 +74,6 @@ public class OWSSwiftUtils: NSObject {
 
     @objc
     public class func logStackTrace() {
-        Thread.callStackSymbols.forEach { print($0) }
+        Thread.callStackSymbols.forEach { Logger.error($0) }
     }
 }
