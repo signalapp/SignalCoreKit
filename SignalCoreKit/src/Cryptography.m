@@ -107,6 +107,21 @@ const NSUInteger kAES256_KeyByteLength = 32;
     [aCoder encodeObject:_keyData forKey:@"keyData"];
 }
 
+- (BOOL)isEqual:(id)object
+{
+    if ([object isKindOfClass:[OWSAES256Key class]]) {
+        OWSAES256Key *otherKey = (OWSAES256Key *)object;
+        return [otherKey.keyData ows_constantTimeIsEqualToData:self.keyData];
+    }
+
+    return NO;
+}
+
+- (NSUInteger)hash
+{
+    return self.keyData.hash;
+}
+
 @end
 
 #pragma mark -
