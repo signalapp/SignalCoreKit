@@ -10,11 +10,17 @@ public enum OWSDataParserError: Error {
 
 // MARK: - OWSDataParser
 
-@objc public class OWSDataParser: NSObject {
+@objc
+public class OWSDataParser: NSObject {
 
     private let data: Data
     private var cursor: UInt = 0
 
+    @objc
+    public var unreadByteCount: UInt {
+        UInt(data.count) - cursor
+    }
+    
     @objc
     public init(data: Data) {
         self.data = data
