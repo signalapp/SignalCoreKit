@@ -34,8 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
     static unichar bidiPopDirectionalFormatting = 0x202C;
     static unichar bidiPopDirectionalIsolate = 0x2069;
     
-    XCTAssertEqual(@"A", [@"A" ensureBalancedBidiControlCharacters]);
-    
+    XCTAssertEqualObjects(@"A", [@"A" ensureBalancedBidiControlCharacters]);
+
     unichar character1 = 'D';
     unichar character2 = 'E';
     XCTAssertEqualObjects([@"ABC" stringByPrependingCharacter:character1],

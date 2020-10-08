@@ -268,33 +268,36 @@ static unichar bidiPopDirectionalIsolate = 0x2069;
         }
     }
     
-    NSString *balancedString = [self copy];
+    NSMutableString *balancedString = [NSMutableString new];
     
-    // If we have too many isolate starts, append PDI to balance
-    while (isolateStartsCount > isolatePopCount) {
-        balancedString = [balancedString stringByAppendingCharacter:bidiPopDirectionalIsolate];
-        isolatePopCount++;
-    }
     
     // If we have too many isolate pops, prepend FSI to balance
     while (isolatePopCount > isolateStartsCount) {
-        balancedString = [balancedString stringByPrependingCharacter:bidiFirstStrongIsolate];
+        [balancedString appendFormat:@"%C", bidiFirstStrongIsolate];
         isolateStartsCount++;
-    }
-    
-    // If we have too many formatting starts, append PDF to balance
-    while (formattingStartsCount > formattingPopCount) {
-        balancedString = [balancedString stringByAppendingCharacter:bidiPopDirectionalFormatting];
-        formattingPopCount++;
     }
     
     // If we have too many formatting pops, prepend LRE to balance
     while (formattingPopCount > formattingStartsCount) {
-        balancedString = [balancedString stringByPrependingCharacter:bidiLeftToRightEmbedding];
+        [balancedString appendFormat:@"%C", bidiLeftToRightEmbedding];
         formattingStartsCount++;
     }
     
-    return balancedString;
+    [balancedString appendString:self];
+    
+    // If we have too many formatting starts, append PDF to balance
+    while (formattingStartsCount > formattingPopCount) {
+        [balancedString appendFormat:@"%C", bidiPopDirectionalFormatting];
+        formattingPopCount++;
+    }
+    
+    // If we have too many isolate starts, append PDI to balance
+    while (isolateStartsCount > isolatePopCount) {
+        [balancedString appendFormat:@"%C", bidiPopDirectionalIsolate];
+        isolatePopCount++;
+    }
+    
+    return [balancedString copy];
 }
 
 - (NSString *)stringByPrependingCharacter:(unichar)character
