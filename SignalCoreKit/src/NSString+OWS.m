@@ -267,35 +267,44 @@ static unichar bidiPopDirectionalIsolate = 0x2069;
             formattingPopCount++;
         }
     }
-
-    NSMutableString *mutableString = [self mutableCopy];
-    NSString *balancedString = self;
-
+    
+    NSString *balancedString = [self copy];
+    
     // If we have too many isolate starts, append PDI to balance
     while (isolateStartsCount > isolatePopCount) {
-        [mutableString appendFormat:@"%C", bidiPopDirectionalIsolate];
+        balancedString = [balancedString stringByAppendingCharacter:bidiPopDirectionalIsolate];
         isolatePopCount++;
     }
-
+    
     // If we have too many isolate pops, prepend FSI to balance
     while (isolatePopCount > isolateStartsCount) {
-        [mutableString appendFormat:@"%C%@", bidiFirstStrongIsolate, balancedString];
+        balancedString = [balancedString stringByPrependingCharacter:bidiFirstStrongIsolate];
         isolateStartsCount++;
     }
-
+    
     // If we have too many formatting starts, append PDF to balance
     while (formattingStartsCount > formattingPopCount) {
-        [mutableString appendFormat:@"%C", bidiPopDirectionalFormatting];
+        balancedString = [balancedString stringByAppendingCharacter:bidiPopDirectionalFormatting];
         formattingPopCount++;
     }
-
+    
     // If we have too many formatting pops, prepend LRE to balance
     while (formattingPopCount > formattingStartsCount) {
-        [mutableString appendFormat:@"%C%@", bidiLeftToRightEmbedding, balancedString];
+        balancedString = [balancedString stringByPrependingCharacter:bidiLeftToRightEmbedding];
         formattingStartsCount++;
     }
+    
+    return balancedString;
+}
 
-    return [mutableString copy];
+- (NSString *)stringByPrependingCharacter:(unichar)character
+{
+    return [NSString stringWithFormat:@"%C%@", character, self];
+}
+
+- (NSString *)stringByAppendingCharacter:(unichar)character
+{
+    return [self stringByAppendingFormat:@"%C", character];
 }
 
 - (NSString *)bidirectionallyBalancedAndIsolated
