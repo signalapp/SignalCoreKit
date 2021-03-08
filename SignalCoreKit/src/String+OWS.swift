@@ -9,11 +9,31 @@ public extension NSString {
     func ows_truncated(toByteCount byteCount: UInt) -> NSString? {
         return (self as String).truncated(toByteCount: byteCount) as NSString?
     }
+    
+    @objc
+    var ows_nilIfEmpty: NSString? {
+        (length == 0) ? nil : self
+    }
+    
+    @objc
+    var ows_strippedOrNil: NSString? {
+        ows_stripped().ows_nilIfEmpty
+    }
 }
+
+// MARK: -
 
 public extension String {
     var stripped: String {
         return (self as NSString).ows_stripped()
+    }
+    
+    var strippedOrNil: String? {
+        stripped.nilIfEmpty
+    }
+    
+    var nilIfEmpty: String? {
+        isEmpty ? nil : self
     }
 
     var filterForDisplay: String? {
