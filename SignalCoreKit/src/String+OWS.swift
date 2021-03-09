@@ -101,3 +101,14 @@ public extension String {
         return components.joined()
     }
 }
+
+// MARK: -
+
+extension Optional where Wrapped == String {
+    public var isEmptyOrNil: Bool {
+        guard let value = self else {
+            return true
+        }
+        return value.isEmpty
+    }
+}
