@@ -32,7 +32,7 @@ A Swift & Objective-C library used by other Signal libraries.
   s.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DSQLITE_HAS_CODEC' }
 
   s.dependency 'CocoaLumberjack'
-  s.dependency 'GRKOpenSSLFramework'
+  s.dependency 'OpenSSL-Universal'
 
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = 'SignalCoreKitTests/src/**/*.{h,m,swift}'
