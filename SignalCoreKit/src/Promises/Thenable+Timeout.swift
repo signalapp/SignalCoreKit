@@ -8,7 +8,7 @@ public extension Thenable {
     func nilTimeout(seconds: TimeInterval) -> Guarantee<Value?> {
         let timeout: Guarantee<Value?> = after(seconds: seconds).map { nil }
 
-        return Self.race([
+        return Guarantee.race([
             map { (a: Value?) -> (Value?, Bool) in
                 (a, false)
             },
@@ -28,7 +28,7 @@ public extension Thenable {
             return substituteValue
         }
 
-        return Self.race([
+        return Guarantee.race([
             map { ($0, false) },
             timeout.map { ($0, true) }
         ]).map { result, didTimeout in
@@ -46,7 +46,7 @@ public extension Promise {
             throw TimeoutError(underlyingError: timeoutErrorBlock())
         }
 
-        return Self.race([self, timeout]).recover { error -> Promise<Value> in
+        return Promise.race([self, timeout]).recover { error -> Promise<Value> in
             switch error {
             case let timeoutError as TimeoutError:
                 if let description = description {

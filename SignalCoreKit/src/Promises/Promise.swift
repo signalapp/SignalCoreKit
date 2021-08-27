@@ -12,6 +12,7 @@ public final class Promise<T>: Thenable, Catchable {
         set { future.currentQueue = newValue }
     }
     public var result: Promise<Value>.Result? { future.result }
+    public var isSealed: Bool { future.isSealed }
 
     public init(on initialQueue: DispatchQueue? = nil, future: Future<Value> = Future()) {
         self.future = future
@@ -52,6 +53,18 @@ public final class Promise<T>: Thenable, Catchable {
         }
     }
 
+    public convenience init(
+        onCurrent queue: DispatchQueue,
+        _ block: @escaping () throws -> Value
+    ) {
+        self.init(on: queue)
+        do {
+            resolve(try block())
+        } catch {
+            reject(error)
+        }
+    }
+
     public convenience init<T: Thenable>(
         on queue: DispatchQueue,
         _ block: @escaping () throws -> T
@@ -63,6 +76,18 @@ public final class Promise<T>: Thenable, Catchable {
             } catch {
                 self.reject(error)
             }
+        }
+    }
+
+    public convenience init<T: Thenable>(
+        onCurrent queue: DispatchQueue,
+        _ block: @escaping () throws -> T
+    ) where T.Value == Value {
+        self.init(on: queue)
+        do {
+            resolve(on: queue, with: try block())
+        } catch {
+            reject(error)
         }
     }
 

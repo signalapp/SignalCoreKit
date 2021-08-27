@@ -6,14 +6,48 @@ import Foundation
 
 @objc
 public class AnyPromise: NSObject {
-    private let promise = Promise<Any>()
+    private let anyPromise = Promise<Any>()
 
-    public required init<T>(_ promise: Promise<T>) {
-        promise.done { value in
-            promise.resolve(value)
-        }.catch { error in
-            promise.reject(error)
+    public convenience init<T: Thenable>(_ thenable: T) {
+        self.init()
+
+        if let promise = thenable as? Promise<T.Value> {
+            promise.done { value in
+                self.anyPromise.resolve(value)
+            }.catch { error in
+                self.anyPromise.reject(error)
+            }
+        } else {
+            thenable.done { self.anyPromise.resolve($0) }
         }
+    }
+
+    @objc
+    public class var withFutureOnCurrent: ((DispatchQueue, @escaping (AnyFuture) -> Void) -> AnyPromise) {
+        { queue, block in
+            let promise = AnyPromise()
+            promise.anyPromise.currentQueue = queue
+            block(AnyFuture(promise.anyPromise.future))
+            return promise
+        }
+    }
+
+    @objc
+    public class var withFutureOn: ((DispatchQueue, @escaping (AnyFuture) -> Void) -> AnyPromise) {
+        { queue, block in
+            let promise = AnyPromise()
+            promise.anyPromise.currentQueue = queue
+            queue.async {
+                block(AnyFuture(promise.anyPromise.future))
+            }
+            return promise
+        }
+    }
+
+    @objc
+    public convenience init(future: (AnyFuture) -> Void) {
+        self.init()
+        future(AnyFuture(anyPromise.future))
     }
 
     public required override init() {
@@ -21,61 +55,61 @@ public class AnyPromise: NSObject {
     }
 
     @objc
-    public func map() -> ((@escaping (Any) -> Any) -> AnyPromise) {
-        { AnyPromise(self.promise.map($0)) }
+    public var map: ((@escaping (Any) -> Any) -> AnyPromise) {
+        { AnyPromise(self.anyPromise.map($0)) }
     }
 
     @objc
-    public func mapOn() -> ((DispatchQueue, @escaping (Any) -> Any) -> AnyPromise) {
-        { AnyPromise(self.promise.map(on: $0, $1)) }
+    public var mapOn: ((DispatchQueue, @escaping (Any) -> Any) -> AnyPromise) {
+        { AnyPromise(self.anyPromise.map(on: $0, $1)) }
     }
 
     @objc
-    public func done() -> ((@escaping (Any) -> Void) -> AnyPromise) {
-        { AnyPromise(self.promise.done($0)) }
+    public var done: ((@escaping (Any) -> Void) -> AnyPromise) {
+        { AnyPromise(self.anyPromise.done($0)) }
     }
 
     @objc
-    public func doneOn() -> ((DispatchQueue, @escaping (Any) -> Void) -> AnyPromise) {
-        { AnyPromise(self.promise.done(on: $0, $1)) }
+    public var doneOn: ((DispatchQueue, @escaping (Any) -> Void) -> AnyPromise) {
+        { AnyPromise(self.anyPromise.done(on: $0, $1)) }
     }
 
     @objc
-    public func then() -> ((@escaping (Any) -> AnyPromise) -> AnyPromise) {
+    public var then: ((@escaping (Any) -> AnyPromise) -> AnyPromise) {
         { block in
-            AnyPromise(self.promise.then { block($0).promise })
+            AnyPromise(self.anyPromise.then { block($0).anyPromise })
         }
     }
 
     @objc
-    public func thenOn() -> ((DispatchQueue, @escaping (Any) -> AnyPromise) -> AnyPromise) {
+    public var thenOn: ((DispatchQueue, @escaping (Any) -> AnyPromise) -> AnyPromise) {
         { queue, block in
-            AnyPromise(self.promise.then(on: queue) { block($0).promise })
+            AnyPromise(self.anyPromise.then(on: queue) { block($0).anyPromise })
         }
     }
 
     @objc
-    public func `catch`() -> ((@escaping (Error) -> Void) -> AnyPromise) {
-        { AnyPromise(self.promise.catch($0)) }
+    public var `catch`: ((@escaping (Error) -> Void) -> AnyPromise) {
+        { AnyPromise(self.anyPromise.catch($0)) }
     }
 
     @objc
-    public func catchOn() -> ((DispatchQueue, @escaping (Error) -> Void) -> AnyPromise) {
-        { AnyPromise(self.promise.catch(on: $0, $1)) }
+    public var catchOn: ((DispatchQueue, @escaping (Error) -> Void) -> AnyPromise) {
+        { AnyPromise(self.anyPromise.catch(on: $0, $1)) }
     }
 
     @objc
-    public func ensure() -> ((@escaping () -> Void) -> AnyPromise) {
-        { AnyPromise(self.promise.ensure($0)) }
+    public var ensure: ((@escaping () -> Void) -> AnyPromise) {
+        { AnyPromise(self.anyPromise.ensure($0)) }
     }
 
     @objc
-    public func ensureOn() -> ((DispatchQueue, @escaping () -> Void) -> AnyPromise) {
-        { AnyPromise(self.promise.ensure(on: $0, $1)) }
+    public var ensureOn: ((DispatchQueue, @escaping () -> Void) -> AnyPromise) {
+        { AnyPromise(self.anyPromise.ensure(on: $0, $1)) }
     }
 
     public func asVoid() -> Promise<Void> {
-        promise.asVoid()
+        anyPromise.asVoid()
     }
 }
 
@@ -84,26 +118,51 @@ extension AnyPromise: Thenable, Catchable {
 
     public var currentQueue: DispatchQueue? {
         get {
-            promise.currentQueue
+            anyPromise.currentQueue
         }
         set {
-            promise.currentQueue = newValue
+            anyPromise.currentQueue = newValue
         }
     }
 
     public func observe(_ block: @escaping (AnyPromise.Result) -> Void) {
-        promise.observe(block)
+        anyPromise.observe(block)
     }
 
     public func resolve(_ value: Any) {
-        promise.resolve(value)
+        anyPromise.resolve(value)
     }
 
-    public func resolve<T>(on queue: DispatchQueue?, with thenable: T) where T : Thenable, Any == T.Value {
-        promise.resolve(on: queue, with: thenable)
+    public func resolve<T>(on queue: DispatchQueue?, with thenable: T) where T: Thenable, Any == T.Value {
+        anyPromise.resolve(on: queue, with: thenable)
     }
 
     public func reject(_ error: Error) {
-        promise.reject(error)
+        anyPromise.reject(error)
+    }
+}
+
+@objc
+public class AnyFuture: NSObject {
+    private let future: Future<Any>
+    required init(_ future: Future<Any>) {
+        self.future = future
+        super.init()
+    }
+
+    @objc
+    public func resolve(value: Any) { future.resolve(value) }
+
+    @objc
+    public func reject(error: Error) { future.reject(error) }
+
+    @objc
+    public func resolveWithPromise(_ promise: AnyPromise) {
+        future.resolve(with: promise)
+    }
+
+    @objc
+    public func resolve(onQueue queue: DispatchQueue, withPromise promise: AnyPromise) {
+        future.resolve(on: queue, with: promise)
     }
 }

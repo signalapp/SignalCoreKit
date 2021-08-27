@@ -25,7 +25,7 @@ public final class Future<Value> {
     }
 
     private var observers = [(Result) -> Void]()
-    private var observerLock = UnfairLock()
+    private let observerLock = UnfairLock()
     public func observe(_ block: @escaping (Result) -> Void) {
         observerLock.withLock {
             if let result = result {

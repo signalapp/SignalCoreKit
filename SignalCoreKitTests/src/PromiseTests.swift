@@ -111,9 +111,11 @@ class PromiseTests: XCTestCase {
         }.map { _ -> String in
             throw OWSGenericError("some error")
         }.done { _ in
-        }.catch { _ in
+            XCTAssert(false, "Done should never be called.")
         }.ensure {
             ensureExpectation1.fulfill()
+        }.catch { _ in
+            XCTAssert(true, "Catch should be called.")
         }
 
         Promise(on: .global()) { () -> String in
@@ -122,10 +124,35 @@ class PromiseTests: XCTestCase {
             return string + "xyz"
         }.done { _ in
             XCTAssert(true, "Done should be called.")
-        }.catch { _ in
-            XCTAssert(false, "Catch should never be called.")
         }.ensure {
             ensureExpectation2.fulfill()
+        }.catch { _ in
+            XCTAssert(false, "Catch should never be called.")
+        }
+
+        waitForExpectations(timeout: 5)
+    }
+
+    func test_whenFullfilled() {
+        let when1 = expectation(description: "when1")
+        let when2 = expectation(description: "when2")
+
+        Promise.when(fullfilled: [
+            Promise(on: .global()) { "abc" },
+            Promise(on: .main) { "xyz" }.map { $0 + "abc" }
+        ]).done {
+            when1.fulfill()
+        }.catch { _ in
+            XCTAssert(false, "Catch should never be called.")
+        }
+
+        Promise.when(fullfilled: [
+            Promise(on: .global()) { "abc" },
+            Promise(on: .main) { "xyz" }.map { throw OWSGenericError("an error") }
+        ]).done {
+            XCTAssert(false, "Done should never be called.")
+        }.catch { _ in
+            when2.fulfill()
         }
 
         waitForExpectations(timeout: 5)
@@ -135,21 +162,39 @@ class PromiseTests: XCTestCase {
         let when1 = expectation(description: "when1")
         let when2 = expectation(description: "when2")
 
-        Promise<String>.when([
-            Promise(on: .global()) { "abc" },
-            Promise(on: .main) { "xyz" }.map { $0 + "abc" }
+        var chainOneCounter = 0
+
+        Promise.when(resolved: [
+            Promise(onCurrent: .main) {
+                chainOneCounter += 1
+                throw OWSGenericError("error")
+            },
+            Promise(on: .global()) { () -> String in
+                sleep(2)
+                chainOneCounter += 1
+                return "abc"
+            }
         ]).done {
+            XCTAssertEqual(chainOneCounter, 2)
             when1.fulfill()
-        }.catch { _ in
-            XCTAssert(false, "Catch should never be called.")
         }
 
-        Promise<String>.when([
-            Promise(on: .global()) { "abc" },
-            Promise(on: .main) { "xyz" }.map { throw OWSGenericError("an error") }
+        var chainTwoCounter = 0
+
+        Promise.when(fullfilled: [
+            Promise(onCurrent: .main) {
+                chainTwoCounter += 1
+                throw OWSGenericError("error")
+            },
+            Promise(on: .global()) { () -> String in
+                sleep(2)
+                chainTwoCounter += 1
+                return "abc"
+            }
         ]).done {
             XCTAssert(false, "Done should never be called.")
         }.catch { _ in
+            XCTAssertEqual(chainTwoCounter, 1)
             when2.fulfill()
         }
 
@@ -194,6 +239,31 @@ class PromiseTests: XCTestCase {
             XCTAssertEqual(result, "default")
             expectNoTimeout.fulfill()
         }
+
+        waitForExpectations(timeout: 5)
+    }
+
+    func test_anyPromise() {
+        let anyPromiseExpectation = expectation(description: "Expect anyPromise on global queue")
+        let mapExpectation = expectation(description: "Expect map on global queue")
+        let doneExpectation = expectation(description: "Expect done on global queue")
+
+        var globalThread: Thread?
+        AnyPromise(Promise(on: .global()) { () -> String in
+            assertOnQueue(.global())
+            globalThread = Thread.current
+            anyPromiseExpectation.fulfill()
+            return "abc"
+        }).map { string -> String in
+            XCTAssertTrue(string is String)
+            XCTAssertEqual(Thread.current, globalThread)
+            mapExpectation.fulfill()
+            return (string as! String) + "xyz"
+        }.done { string in
+            XCTAssertEqual(Thread.current, globalThread)
+            XCTAssertEqual(string, "abcxyz")
+            doneExpectation.fulfill()
+        }.cauterize()
 
         waitForExpectations(timeout: 5)
     }

@@ -21,6 +21,7 @@ public extension Catchable {
         }
     }
 
+    @discardableResult
     func recover(
         on queue: DispatchQueue? = nil,
         _ block: @escaping (Error) -> Value
@@ -28,6 +29,7 @@ public extension Catchable {
         observe(on: queue, successBlock: { $0 }, failureBlock: block)
     }
 
+    @discardableResult
     func recover(
         on queue: DispatchQueue? = nil,
         _ block: @escaping (Error) -> Guarantee<Value>
@@ -49,7 +51,6 @@ public extension Catchable {
         observe(on: queue, successBlock: { $0 }, failureBlock: block)
     }
 
-    @discardableResult
     func ensure(
         on queue: DispatchQueue? = nil,
         _ block: @escaping () -> Void
@@ -61,6 +62,11 @@ public extension Catchable {
             block()
         }
     }
+
+    @discardableResult
+    func cauterize() -> Self { self }
+
+    func asVoid() -> Promise<Void> { map { _ in } }
 }
 
 public extension Thenable where Self: Catchable {
@@ -105,14 +111,9 @@ public extension Thenable where Self: Catchable {
     ) -> Self where T.Value == Value {
         observe(on: queue, successBlock: block)
     }
-
-    func asVoid() -> Promise<Void> {
-        map { _ in }
-    }
 }
 
 fileprivate extension Thenable where Self: Catchable {
-    @discardableResult
     func observe<T>(
         on queue: DispatchQueue?,
         successBlock: @escaping (Value) throws -> T,
@@ -147,7 +148,6 @@ fileprivate extension Thenable where Self: Catchable {
         return promise
     }
 
-    @discardableResult
     func observe(
         on queue: DispatchQueue?,
         successBlock: @escaping (Value) -> Value,
@@ -177,7 +177,6 @@ fileprivate extension Thenable where Self: Catchable {
         return promise
     }
 
-    @discardableResult
     func observe(
         on queue: DispatchQueue?,
         successBlock: @escaping (Value) -> Value,
@@ -207,7 +206,6 @@ fileprivate extension Thenable where Self: Catchable {
         return promise
     }
 
-    @discardableResult
     func observe(
         on queue: DispatchQueue?,
         successBlock: @escaping (Value) throws -> Value,
@@ -241,7 +239,6 @@ fileprivate extension Thenable where Self: Catchable {
         return promise
     }
 
-    @discardableResult
     func observe(
         on queue: DispatchQueue?,
         successBlock: @escaping (Value) throws -> Value,

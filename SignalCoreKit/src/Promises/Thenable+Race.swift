@@ -5,7 +5,11 @@
 import Foundation
 
 public extension Thenable {
-    static func race<T: Thenable>(_ thenables: [T]) -> Promise<T.Value> {
+    static func race<T: Thenable>(_ thenables: T...) -> Promise<T.Value> where T.Value == Value {
+        race(thenables)
+    }
+
+    static func race<T: Thenable>(_ thenables: [T]) -> Promise<T.Value> where T.Value == Value {
         let returnPromise = Promise<T.Value>()
 
         for thenable in thenables {

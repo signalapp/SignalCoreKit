@@ -6,19 +6,21 @@ import Foundation
 
 public final class Guarantee<T>: Thenable {
     public typealias Value = T
-    public private(set) var isSealed = false
-    public private(set) var result: T? {
-        didSet { result.map(sealResult) }
+    public let future: Future<Value>
+    public var currentQueue: DispatchQueue? {
+        get { future.currentQueue }
+        set { future.currentQueue = newValue }
     }
-    public var currentQueue: DispatchQueue?
+    public var result: Promise<Value>.Result? { future.result }
+    public var isSealed: Bool { future.isSealed }
 
     public init(on initialQueue: DispatchQueue) {
-        self.currentQueue = initialQueue
+        self.future = Future(on: initialQueue)
     }
 
-    public convenience init(result: Value) {
+    public convenience init(value: Value) {
         self.init()
-        self.result = result
+        resolve(value)
     }
 
     public convenience init() {
@@ -35,77 +37,54 @@ public final class Guarantee<T>: Thenable {
         }
     }
 
+    public convenience init(
+        onCurrent queue: DispatchQueue,
+        _ block: @escaping () -> Value
+    ) {
+        self.init(on: queue)
+        resolve(block())
+    }
+
     public convenience init<T: Thenable>(
-        on queue: DispatchQueue,
+        onCurrent queue: DispatchQueue,
         _ block: @escaping () -> T
     ) where T.Value == Value {
         self.init(on: queue)
-        queue.async {
-            self.resolve(on: queue, with: block())
-        }
+        resolve(on: queue, with: block())
     }
 
-    private var observers = [(Result) -> Void]()
-    private let observerLock = UnfairLock()
     public func observe(_ block: @escaping (Promise<Value>.Result) -> Void) {
-        observerLock.withLock {
-            if let result = result {
-                // If the current queue is defined, ensure
-                // we run the block on it. Normally, promise
-                // chains run on the same queue as the previous
-                // element in the chain *without* an async dispatch
-                // for performance reasons, but if the observer is
-                // added *after* the promise has finished, we need
-                // to dispatch to the correct queue.
-                if let currentQueue = currentQueue {
-                    currentQueue.async { block(.success(result)) }
-                } else {
-                    block(.success(result))
-                }
-                return
-            }
-            observers.append(block)
-        }
-    }
-
-    private func sealResult(_ result: T) {
-        observerLock.withLock {
-            guard !isSealed else { return }
-            isSealed = true
-            observers.forEach { $0(.success(result)) }
-            observers.removeAll()
-        }
+        future.observe(block)
     }
 
     public func resolve(_ value: Value) {
-        sealResult(value)
+        future.resolve(value)
     }
 
     public func resolve<T: Thenable>(
         on queue: DispatchQueue?,
         with thenable: T
     ) where T.Value == Value {
-        thenable.done { value in
-            self.sealResult(value)
-        }
+        future.resolve(on: queue, with: thenable)
     }
 }
 
 public extension Guarantee {
     func wait() throws -> T {
-        var result = self.result
+        var result = future.result
 
         if result == nil {
             let group = DispatchGroup()
             group.enter()
-            observe {
-                guard case .success(let value) = $0 else { return }
-                result = value
-                group.leave()
-            }
+            observe { result = $0; group.leave() }
             group.wait()
         }
 
-        return result!
+        switch result! {
+        case .success(let value):
+            return value
+        case .failure(let error):
+            throw error
+        }
     }
 }

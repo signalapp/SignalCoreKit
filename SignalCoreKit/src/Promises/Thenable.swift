@@ -30,6 +30,7 @@ public extension Thenable {
         observe(on: queue, block: block)
     }
 
+    @discardableResult
     func then<T>(
         on queue: DispatchQueue? = nil,
         _ block: @escaping (Value) -> Guarantee<T>
@@ -50,7 +51,6 @@ public extension Thenable {
 }
 
 fileprivate extension Thenable {
-    @discardableResult
     func observe<T>(
         on queue: DispatchQueue?,
         block: @escaping (Value) -> T
