@@ -32,19 +32,19 @@ public final class Promise<T>: Thenable, Catchable {
     }
 
     public convenience init(
-        on queue: DispatchQueue,
+        on queue: DispatchQueue = .current,
         _ block: @escaping (Future<Value>) -> Void
     ) {
         self.init(on: queue)
-        queue.async { block(self.future) }
+        queue.asyncIfNecessary { block(self.future) }
     }
 
     public convenience init(
-        on queue: DispatchQueue,
+        on queue: DispatchQueue = .current,
         _ block: @escaping () throws -> Value
     ) {
         self.init(on: queue)
-        queue.async {
+        queue.asyncIfNecessary {
             do {
                 self.resolve(try block())
             } catch {
@@ -53,24 +53,12 @@ public final class Promise<T>: Thenable, Catchable {
         }
     }
 
-    public convenience init(
-        onCurrent queue: DispatchQueue,
-        _ block: @escaping () throws -> Value
-    ) {
-        self.init(on: queue)
-        do {
-            resolve(try block())
-        } catch {
-            reject(error)
-        }
-    }
-
     public convenience init<T: Thenable>(
-        on queue: DispatchQueue,
+        on queue: DispatchQueue = .current,
         _ block: @escaping () throws -> T
     ) where T.Value == Value {
         self.init(on: queue)
-        queue.async {
+        queue.asyncIfNecessary {
             do {
                 self.resolve(on: queue, with: try block())
             } catch {
@@ -79,20 +67,8 @@ public final class Promise<T>: Thenable, Catchable {
         }
     }
 
-    public convenience init<T: Thenable>(
-        onCurrent queue: DispatchQueue,
-        _ block: @escaping () throws -> T
-    ) where T.Value == Value {
-        self.init(on: queue)
-        do {
-            resolve(on: queue, with: try block())
-        } catch {
-            reject(error)
-        }
-    }
-
-    public func observe(_ block: @escaping (Promise<Value>.Result) -> Void) {
-        future.observe(block)
+    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Promise<Value>.Result) -> Void) {
+        future.observe(on: queue, block: block)
     }
 
     public func resolve(_ value: Value) { future.resolve(value) }

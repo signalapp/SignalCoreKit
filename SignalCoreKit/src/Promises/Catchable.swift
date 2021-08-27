@@ -120,29 +120,18 @@ fileprivate extension Thenable where Self: Catchable {
         failureBlock: @escaping (Error) throws -> Void = { _ in }
     ) -> Promise<T> {
         let promise = Promise<T>()
-        observe { result in
-            if let queue = queue { promise.currentQueue = queue }
-
-            func resultHandler() {
-                do {
-                    switch result {
-                    case .success(let value):
-                        promise.resolve(try successBlock(value))
-                    case .failure(let error):
-                        try failureBlock(error)
-                        promise.reject(error)
-                    }
-                } catch {
+        observe(on: queue) { result in
+            promise.currentQueue = .current
+            do {
+                switch result {
+                case .success(let value):
+                    promise.resolve(try successBlock(value))
+                case .failure(let error):
+                    try failureBlock(error)
                     promise.reject(error)
                 }
-            }
-
-            // Only perform an async dispatch if we're not
-            // already on the correct queue.
-            if let queue = queue, queue != self.currentQueue {
-                queue.async { resultHandler() }
-            } else {
-                resultHandler()
+            } catch {
+                promise.reject(error)
             }
         }
         return promise
@@ -153,28 +142,17 @@ fileprivate extension Thenable where Self: Catchable {
         successBlock: @escaping (Value) -> Value,
         failureBlock: @escaping (Error) -> Value
     ) -> Guarantee<Value> {
-        let promise = Guarantee<Value>()
-        observe { result in
-            if let queue = queue { promise.currentQueue = queue }
-
-            func resultHandler() {
-                switch result {
-                case .success(let value):
-                    promise.resolve(successBlock(value))
-                case .failure(let error):
-                    promise.resolve(failureBlock(error))
-                }
-            }
-
-            // Only perform an async dispatch if we're not
-            // already on the correct queue.
-            if let queue = queue, queue != self.currentQueue {
-                queue.async { resultHandler() }
-            } else {
-                resultHandler()
+        let guarantee = Guarantee<Value>()
+        observe(on: queue) { result in
+            guarantee.currentQueue = .current
+            switch result {
+            case .success(let value):
+                guarantee.resolve(successBlock(value))
+            case .failure(let error):
+                guarantee.resolve(failureBlock(error))
             }
         }
-        return promise
+        return guarantee
     }
 
     func observe(
@@ -182,28 +160,17 @@ fileprivate extension Thenable where Self: Catchable {
         successBlock: @escaping (Value) -> Value,
         failureBlock: @escaping (Error) -> Guarantee<Value>
     ) -> Guarantee<Value> {
-        let promise = Guarantee<Value>()
-        observe { result in
-            if let queue = queue { promise.currentQueue = queue }
-
-            func resultHandler() {
-                switch result {
-                case .success(let value):
-                    promise.resolve(successBlock(value))
-                case .failure(let error):
-                    promise.resolve(on: queue, with: failureBlock(error))
-                }
-            }
-
-            // Only perform an async dispatch if we're not
-            // already on the correct queue.
-            if let queue = queue, queue != self.currentQueue {
-                queue.async { resultHandler() }
-            } else {
-                resultHandler()
+        let guarantee = Guarantee<Value>()
+        observe(on: queue) { result in
+            guarantee.currentQueue = .current
+            switch result {
+            case .success(let value):
+                guarantee.resolve(successBlock(value))
+            case .failure(let error):
+                guarantee.resolve(on: .current, with: failureBlock(error))
             }
         }
-        return promise
+        return guarantee
     }
 
     func observe(
@@ -212,28 +179,17 @@ fileprivate extension Thenable where Self: Catchable {
         failureBlock: @escaping (Error) throws -> Value
     ) -> Promise<Value> {
         let promise = Promise<Value>()
-        observe { result in
-            if let queue = queue { promise.currentQueue = queue }
-
-            func resultHandler() {
-                do {
-                    switch result {
-                    case .success(let value):
-                        promise.resolve(try successBlock(value))
-                    case .failure(let error):
-                        promise.resolve(try failureBlock(error))
-                    }
-                } catch {
-                    promise.reject(error)
+        observe(on: queue) { result in
+            promise.currentQueue = .current
+            do {
+                switch result {
+                case .success(let value):
+                    promise.resolve(try successBlock(value))
+                case .failure(let error):
+                    promise.resolve(try failureBlock(error))
                 }
-            }
-
-            // Only perform an async dispatch if we're not
-            // already on the correct queue.
-            if let queue = queue, queue != self.currentQueue {
-                queue.async { resultHandler() }
-            } else {
-                resultHandler()
+            } catch {
+                promise.reject(error)
             }
         }
         return promise
@@ -245,28 +201,17 @@ fileprivate extension Thenable where Self: Catchable {
         failureBlock: @escaping (Error) throws -> Promise<Value>
     ) -> Promise<Value> {
         let promise = Promise<Value>()
-        observe { result in
-            if let queue = queue { promise.currentQueue = queue }
-
-            func resultHandler() {
-                do {
-                    switch result {
-                    case .success(let value):
-                        promise.resolve(try successBlock(value))
-                    case .failure(let error):
-                        promise.resolve(on: queue, with: try failureBlock(error))
-                    }
-                } catch {
-                    promise.reject(error)
+        observe(on: queue) { result in
+            promise.currentQueue = .current
+            do {
+                switch result {
+                case .success(let value):
+                    promise.resolve(try successBlock(value))
+                case .failure(let error):
+                    promise.resolve(on: .current, with: try failureBlock(error))
                 }
-            }
-
-            // Only perform an async dispatch if we're not
-            // already on the correct queue.
-            if let queue = queue, queue != self.currentQueue {
-                queue.async { resultHandler() }
-            } else {
-                resultHandler()
+            } catch {
+                promise.reject(error)
             }
         }
         return promise
@@ -278,29 +223,18 @@ fileprivate extension Thenable where Self: Catchable {
         failureBlock: @escaping (Error) throws -> Void = { _ in }
     ) -> Self where T.Value == Value {
         let thenable = Self.init()
-        observe { result in
-            if let queue = queue { thenable.currentQueue = queue }
-
-            func resultHandler() {
-                do {
-                    switch result {
-                    case .success(let value):
-                        thenable.resolve(on: queue, with: try successBlock(value))
-                    case .failure(let error):
-                        try failureBlock(error)
-                        thenable.reject(error)
-                    }
-                } catch {
+        observe(on: queue) { result in
+            thenable.currentQueue = .current
+            do {
+                switch result {
+                case .success(let value):
+                    thenable.resolve(on: .current, with: try successBlock(value))
+                case .failure(let error):
+                    try failureBlock(error)
                     thenable.reject(error)
                 }
-            }
-
-            // Only perform an async dispatch if we're not
-            // already on the correct queue.
-            if let queue = queue, queue != self.currentQueue {
-                queue.async { resultHandler() }
-            } else {
-                resultHandler()
+            } catch {
+                thenable.reject(error)
             }
         }
         return thenable

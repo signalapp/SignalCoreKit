@@ -9,7 +9,7 @@ public protocol Thenable: AnyObject {
     typealias Result = Swift.Result<Value, Error>
     init()
     var currentQueue: DispatchQueue? { get set }
-    func observe(_ block: @escaping (Result) -> Void)
+    func observe(on queue: DispatchQueue?, block: @escaping (Result) -> Void)
     func resolve(_ value: Value)
     func resolve<T: Thenable>(on queue: DispatchQueue?, with thenable: T) where T.Value == Value
 }
@@ -55,50 +55,34 @@ fileprivate extension Thenable {
         on queue: DispatchQueue?,
         block: @escaping (Value) -> T
     ) -> Guarantee<T> {
-        let gurantee = Guarantee<T>()
-        observe { result in
-            if let queue = queue { gurantee.currentQueue = queue }
+        let guarantee = Guarantee<T>()
+        observe(on: queue) { result in
+            guarantee.currentQueue = .current
             switch result {
             case .success(let value):
-                // Only perform an async dispatch if we're not
-                // already on the correct queue.
-                if let queue = queue, queue != self.currentQueue {
-                    queue.async {
-                        gurantee.resolve(block(value))
-                    }
-                } else {
-                    gurantee.resolve(block(value))
-                }
+                guarantee.resolve(block(value))
             case .failure(let error):
                 owsFail("Unexpectedly received error result from unfailable promise \(error)")
             }
         }
-        return gurantee
+        return guarantee
     }
 
     func observe<T>(
         on queue: DispatchQueue?,
         block: @escaping (Value) -> Guarantee<T>
     ) -> Guarantee<T> {
-        let gurantee = Guarantee<T>()
-        observe { result in
-            if let queue = queue { gurantee.currentQueue = queue }
+        let guarantee = Guarantee<T>()
+        observe(on: queue) { result in
+            guarantee.currentQueue = .current
             switch result {
             case .success(let value):
-                // Only perform an async dispatch if we're not
-                // already on the correct queue.
-                if let queue = queue, queue != self.currentQueue {
-                    queue.async {
-                        gurantee.resolve(on: queue, with: block(value))
-                    }
-                } else {
-                    gurantee.resolve(on: queue, with: block(value))
-                }
+                guarantee.resolve(on: .current, with: block(value))
             case .failure(let error):
                 owsFail("Unexpectedly received error result from unfailable promise \(error)")
             }
         }
-        return gurantee
+        return guarantee
     }
 
     func observe<T>(
@@ -106,31 +90,46 @@ fileprivate extension Thenable {
         block: @escaping (Value) throws -> Promise<T>
     ) -> Promise<T> {
         let promise = Promise<T>()
-        observe { result in
-            if let queue = queue { promise.currentQueue = queue }
-
-            func resultHandler() {
-                do {
-                    switch result {
-                    case .success(let value):
-                        promise.resolve(on: queue, with: try block(value))
-                    case .failure(let error):
-                        promise.reject(error)
-                    }
-                } catch {
+        observe(on: queue) { result in
+            promise.currentQueue = .current
+            do {
+                switch result {
+                case .success(let value):
+                    promise.resolve(on: .current, with: try block(value))
+                case .failure(let error):
                     promise.reject(error)
                 }
-            }
-
-            // Only perform an async dispatch if we're not
-            // already on the correct queue.
-            if let queue = queue, queue != self.currentQueue {
-                queue.async { resultHandler() }
-            } else {
-                resultHandler()
+            } catch {
+                promise.reject(error)
             }
         }
 
         return promise
+    }
+}
+
+public extension DispatchQueue {
+    class var current: DispatchQueue { DispatchCurrentQueue() }
+    func asyncIfNecessary(
+        execute work: @escaping @convention(block) () -> Void
+    ) {
+        if self == Self.current {
+            work()
+        } else {
+            async { work() }
+        }
+    }
+}
+
+public extension Optional where Wrapped == DispatchQueue {
+    func asyncIfNecessary(
+        execute work: @escaping @convention(block) () -> Void
+    ) {
+        switch self {
+        case .some(let queue):
+            queue.asyncIfNecessary(execute: work)
+        case .none:
+            work()
+        }
     }
 }

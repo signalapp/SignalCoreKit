@@ -125,8 +125,8 @@ extension AnyPromise: Thenable, Catchable {
         }
     }
 
-    public func observe(_ block: @escaping (AnyPromise.Result) -> Void) {
-        anyPromise.observe(block)
+    public func observe(on queue: DispatchQueue?, block: @escaping (AnyPromise.Result) -> Void) {
+        anyPromise.observe(on: queue, block: block)
     }
 
     public func resolve(_ value: Any) {

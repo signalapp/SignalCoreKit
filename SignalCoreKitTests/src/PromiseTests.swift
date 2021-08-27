@@ -8,22 +8,20 @@ import SignalCoreKit
 
 class PromiseTests: XCTestCase {
     func test_simpleQueueChaining() {
-        let guranteeExpectation = expectation(description: "Expect gurantee on global queue")
+        let guaranteeExpectation = expectation(description: "Expect guarantee on global queue")
         let mapExpectation = expectation(description: "Expect map on global queue")
         let doneExpectation = expectation(description: "Expect done on global queue")
 
-        var globalThread: Thread?
         Guarantee(on: .global()) { () -> String in
-            assertOnQueue(.global())
-            globalThread = Thread.current
-            guranteeExpectation.fulfill()
+            XCTAssertEqual(DispatchQueue.global(), .current)
+            guaranteeExpectation.fulfill()
             return "abc"
         }.map { string -> String in
-            XCTAssertEqual(Thread.current, globalThread)
+            XCTAssertEqual(DispatchQueue.global(), .current)
             mapExpectation.fulfill()
             return string + "xyz"
         }.done { string in
-            XCTAssertEqual(Thread.current, globalThread)
+            XCTAssertEqual(DispatchQueue.global(), .current)
             XCTAssertEqual(string, "abcxyz")
             doneExpectation.fulfill()
         }
@@ -32,20 +30,20 @@ class PromiseTests: XCTestCase {
     }
 
     func test_mixedQueueChaining() {
-        let guranteeExpectation = expectation(description: "Expect gurantee on global queue")
+        let guaranteeExpectation = expectation(description: "Expect guarantee on global queue")
         let mapExpectation = expectation(description: "Expect map on main queue")
         let doneExpectation = expectation(description: "Expect done on main queue")
 
         Guarantee(on: .global()) { () -> String in
-            assertOnQueue(.global())
-            guranteeExpectation.fulfill()
+            XCTAssertEqual(DispatchQueue.global(), .current)
+            guaranteeExpectation.fulfill()
             return "abc"
         }.map(on: .main) { string -> String in
-            XCTAssertTrue(Thread.isMainThread)
+            XCTAssertEqual(DispatchQueue.main, .current)
             mapExpectation.fulfill()
             return string + "xyz"
         }.done { string in
-            XCTAssertTrue(Thread.isMainThread)
+            XCTAssertEqual(DispatchQueue.main, .current)
             XCTAssertEqual(string, "abcxyz")
             doneExpectation.fulfill()
         }
@@ -54,7 +52,7 @@ class PromiseTests: XCTestCase {
     }
 
     func test_queueChainingWithErrors() {
-        let guranteeExpectation = expectation(description: "Expect gurantee on global queue")
+        let guaranteeExpectation = expectation(description: "Expect guarantee on global queue")
         let mapExpectation = expectation(description: "Expect map on global queue")
         let catchExpectation = expectation(description: "Expect catch on main queue")
 
@@ -62,20 +60,18 @@ class PromiseTests: XCTestCase {
             case assertion
         }
 
-        var globalThread: Thread?
         Promise(on: .global()) { () -> String in
-            assertOnQueue(.global())
-            globalThread = Thread.current
-            guranteeExpectation.fulfill()
+            XCTAssertEqual(DispatchQueue.global(), .current)
+            guaranteeExpectation.fulfill()
             return "abc"
         }.map { _ -> String in
-            XCTAssertEqual(Thread.current, globalThread)
+            XCTAssertEqual(DispatchQueue.global(), .current)
             mapExpectation.fulfill()
             throw SimpleError.assertion
         }.done(on: .main) { _ in
             XCTAssert(false, "Done should never be called.")
         }.catch { error in
-            XCTAssertTrue(Thread.isMainThread)
+            XCTAssertEqual(DispatchQueue.main, .current)
             XCTAssertEqual(error as? SimpleError, SimpleError.assertion)
             catchExpectation.fulfill()
         }
@@ -148,7 +144,7 @@ class PromiseTests: XCTestCase {
 
         Promise.when(fullfilled: [
             Promise(on: .global()) { "abc" },
-            Promise(on: .main) { "xyz" }.map { throw OWSGenericError("an error") }
+            Promise(on: .main) { "xyz" }.map { _ in throw OWSGenericError("an error") }
         ]).done {
             XCTAssert(false, "Done should never be called.")
         }.catch { _ in
@@ -165,7 +161,7 @@ class PromiseTests: XCTestCase {
         var chainOneCounter = 0
 
         Promise.when(resolved: [
-            Promise(onCurrent: .main) {
+            Promise {
                 chainOneCounter += 1
                 throw OWSGenericError("error")
             },
@@ -182,7 +178,7 @@ class PromiseTests: XCTestCase {
         var chainTwoCounter = 0
 
         Promise.when(fullfilled: [
-            Promise(onCurrent: .main) {
+            Promise {
                 chainTwoCounter += 1
                 throw OWSGenericError("error")
             },

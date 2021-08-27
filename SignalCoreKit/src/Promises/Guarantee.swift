@@ -28,33 +28,27 @@ public final class Guarantee<T>: Thenable {
     }
 
     public convenience init(
-        on queue: DispatchQueue,
+        on queue: DispatchQueue = .current,
         _ block: @escaping () -> Value
     ) {
         self.init(on: queue)
-        queue.async {
+        queue.asyncIfNecessary {
             self.resolve(block())
         }
     }
 
-    public convenience init(
-        onCurrent queue: DispatchQueue,
-        _ block: @escaping () -> Value
-    ) {
-        self.init(on: queue)
-        resolve(block())
-    }
-
     public convenience init<T: Thenable>(
-        onCurrent queue: DispatchQueue,
+        on queue: DispatchQueue = .current,
         _ block: @escaping () -> T
     ) where T.Value == Value {
         self.init(on: queue)
-        resolve(on: queue, with: block())
+        queue.asyncIfNecessary {
+            self.resolve(on: queue, with: block())
+        }
     }
 
-    public func observe(_ block: @escaping (Promise<Value>.Result) -> Void) {
-        future.observe(block)
+    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Promise<Value>.Result) -> Void) {
+        future.observe(on: queue, block: block)
     }
 
     public func resolve(_ value: Value) {

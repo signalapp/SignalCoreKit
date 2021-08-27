@@ -13,7 +13,7 @@ public extension Thenable {
         let returnPromise = Promise<T.Value>()
 
         for thenable in thenables {
-            thenable.observe { result in
+            thenable.observe(on: .current) { result in
                 switch result {
                 case .success(let result):
                     guard !returnPromise.future.isSealed else { return }

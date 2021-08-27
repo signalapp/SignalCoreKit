@@ -26,24 +26,23 @@ public final class Future<Value> {
 
     private var observers = [(Result) -> Void]()
     private let observerLock = UnfairLock()
-    public func observe(_ block: @escaping (Result) -> Void) {
+    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Result) -> Void) {
         observerLock.withLock {
-            if let result = result {
-                // If the current queue is defined, ensure
-                // we run the block on it. Normally, promise
-                // chains run on the same queue as the previous
-                // element in the chain *without* an async dispatch
-                // for performance reasons, but if the observer is
-                // added *after* the promise has finished, we need
-                // to dispatch to the correct queue.
-                if let currentQueue = currentQueue {
-                    currentQueue.async { block(result) }
-                } else {
+            func execute(_ result: Result) {
+                // If a queue is not specified, try and run on the chain's
+                // current queue. Normally, promise chains run on the same
+                // queue as the previous element in the chain *without* an
+                // async dispatch.
+                (queue ?? currentQueue).asyncIfNecessary {
                     block(result)
                 }
+            }
+
+            if let result = result {
+                execute(result)
                 return
             }
-            observers.append(block)
+            observers.append(execute)
         }
     }
     private func sealResult(_ result: Result) {

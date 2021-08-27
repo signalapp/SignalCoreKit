@@ -19,7 +19,7 @@ public extension Thenable {
         let lock = UnfairLock()
 
         for thenable in thenables {
-            thenable.observe { result in
+            thenable.observe(on: .current) { result in
                 lock.withLock {
                     switch result {
                     case .success:
@@ -51,7 +51,7 @@ public extension Thenable {
         let lock = UnfairLock()
 
         for thenable in thenables {
-            thenable.observe { _ in
+            thenable.observe(on: .current) { _ in
                 lock.withLock {
                     pendingPromiseCount -= 1
                     if pendingPromiseCount == 0 { returnGuarantee.resolve(()) }

@@ -3,6 +3,7 @@
 //
 
 #import <SignalCoreKit/SignalCoreKit-Swift.h>
+#import <SignalCoreKit/Threading.h>
 #import <XCTest/XCTest.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -10,14 +11,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface AnyPromiseTests : XCTestCase
 
 @end
-
-dispatch_queue_t currentQueue(void)
-{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    return dispatch_get_current_queue();
-#pragma clang diagnostic pop
-}
 
 #pragma mark -
 
@@ -52,18 +45,18 @@ dispatch_queue_t currentQueue(void)
     AnyPromise
         .withFutureOn(globalQueue,
             ^(AnyFuture *future) {
-                XCTAssertEqual(currentQueue(), globalQueue);
+                XCTAssertEqual(DispatchCurrentQueue(), globalQueue);
                 [expectation fulfill];
                 [future resolveWithValue:@"abc"];
             })
         .map(^(id value) {
-            XCTAssertEqual(currentQueue(), globalQueue);
+            XCTAssertEqual(DispatchCurrentQueue(), globalQueue);
             [mapExpectation fulfill];
             NSString *string = (NSString *)value;
             return [string stringByAppendingString:@"xyz"];
         })
         .done(^(id value) {
-            XCTAssertEqual(currentQueue(), globalQueue);
+            XCTAssertEqual(DispatchCurrentQueue(), globalQueue);
             NSString *string = (NSString *)value;
             XCTAssert([string isEqualToString:@"abcxyz"]);
             [doneExpectation fulfill];
@@ -82,19 +75,19 @@ dispatch_queue_t currentQueue(void)
     AnyPromise
         .withFutureOn(globalQueue,
             ^(AnyFuture *future) {
-                XCTAssertEqual(currentQueue(), globalQueue);
+                XCTAssertEqual(DispatchCurrentQueue(), globalQueue);
                 [expectation fulfill];
                 [future resolveWithValue:@"abc"];
             })
         .mapOn(dispatch_get_main_queue(),
             ^(id value) {
-                XCTAssertEqual(currentQueue(), dispatch_get_main_queue());
+                XCTAssertEqual(DispatchCurrentQueue(), dispatch_get_main_queue());
                 [mapExpectation fulfill];
                 NSString *string = (NSString *)value;
                 return [string stringByAppendingString:@"xyz"];
             })
         .done(^(id value) {
-            XCTAssertEqual(currentQueue(), dispatch_get_main_queue());
+            XCTAssertEqual(DispatchCurrentQueue(), dispatch_get_main_queue());
             NSString *string = (NSString *)value;
             XCTAssert([string isEqualToString:@"abcxyz"]);
             [doneExpectation fulfill];

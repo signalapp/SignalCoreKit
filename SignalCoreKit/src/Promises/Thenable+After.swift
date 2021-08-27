@@ -6,10 +6,10 @@ import Foundation
 
 public extension Thenable {
     func after(seconds: TimeInterval) -> Guarantee<Void> {
-        let gurantee = Guarantee<Void>()
+        let guarantee = Guarantee<Void>()
         DispatchQueue.global().asyncAfter(deadline: .now() + seconds) {
-            gurantee.resolve(())
+            guarantee.resolve(())
         }
-        return gurantee
+        return guarantee
     }
 }
