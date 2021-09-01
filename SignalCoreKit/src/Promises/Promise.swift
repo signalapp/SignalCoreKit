@@ -4,27 +4,27 @@
 
 import Foundation
 
-public final class Promise<T>: Thenable, Catchable {
-    public typealias Value = T
+public enum PromiseError: String, Error {
+    case cancelled
+}
+
+public final class Promise<Value>: Thenable, Catchable {
     public let future: Future<Value>
-    public var currentQueue: DispatchQueue? {
-        get { future.currentQueue }
-        set { future.currentQueue = newValue }
-    }
-    public var result: Promise<Value>.Result? { future.result }
+    public var result: Result<Value, Error>? { future.result }
     public var isSealed: Bool { future.isSealed }
 
-    public init(on initialQueue: DispatchQueue? = nil, future: Future<Value> = Future()) {
+    public init(future: Future<Value> = Future()) {
         self.future = future
-        self.currentQueue = initialQueue
     }
 
     public convenience init() {
         self.init(future: Future())
     }
 
-    public convenience init(value: Value) {
-        self.init(future: Future(value: value))
+    public static func value(_ value: Value) -> Self {
+        let promise = Self()
+        promise.resolve(value)
+        return promise
     }
 
     public convenience init(error: Error) {
@@ -32,49 +32,38 @@ public final class Promise<T>: Thenable, Catchable {
     }
 
     public convenience init(
-        on queue: DispatchQueue = .current,
-        _ block: @escaping (Future<Value>) -> Void
+        _ block: (Future<Value>) throws -> Void
     ) {
-        self.init(on: queue)
-        queue.asyncIfNecessary { block(self.future) }
+        self.init()
+        do {
+            try block(self.future)
+        } catch {
+            self.reject(error)
+        }
     }
 
     public convenience init(
-        on queue: DispatchQueue = .current,
-        _ block: @escaping () throws -> Value
+        on queue: DispatchQueue,
+        _ block: @escaping (Future<Value>) throws -> Void
     ) {
-        self.init(on: queue)
+        self.init()
         queue.asyncIfNecessary {
             do {
-                self.resolve(try block())
+                try block(self.future)
             } catch {
                 self.reject(error)
             }
         }
     }
 
-    public convenience init<T: Thenable>(
-        on queue: DispatchQueue = .current,
-        _ block: @escaping () throws -> T
-    ) where T.Value == Value {
-        self.init(on: queue)
-        queue.asyncIfNecessary {
-            do {
-                self.resolve(on: queue, with: try block())
-            } catch {
-                self.reject(error)
-            }
-        }
-    }
-
-    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Promise<Value>.Result) -> Void) {
+    public func observe(on queue: DispatchQueue = .current, block: @escaping (Result<Value, Error>) -> Void) {
         future.observe(on: queue, block: block)
     }
 
     public func resolve(_ value: Value) { future.resolve(value) }
 
     public func resolve<T: Thenable>(
-        on queue: DispatchQueue? = nil,
+        on queue: DispatchQueue = .current,
         with thenable: T
     ) where T.Value == Value {
         future.resolve(on: queue, with: thenable)
@@ -84,13 +73,13 @@ public final class Promise<T>: Thenable, Catchable {
 }
 
 public extension Promise {
-    func wait() throws -> T {
+    func wait() throws -> Value {
         var result = future.result
 
         if result == nil {
             let group = DispatchGroup()
             group.enter()
-            observe { result = $0; group.leave() }
+            observe(on: .global()) { result = $0; group.leave() }
             group.wait()
         }
 
@@ -104,8 +93,8 @@ public extension Promise {
 }
 
 public extension Promise {
-    class func pending() -> (Promise<T>, Future<T>) {
-        let promise = Promise<T>()
+    class func pending() -> (Promise<Value>, Future<Value>) {
+        let promise = Promise<Value>()
         return (promise, promise.future)
     }
 }

@@ -5,10 +5,10 @@
 import Foundation
 
 public extension Thenable {
-    func nilTimeout(seconds: TimeInterval) -> Guarantee<Value?> {
-        let timeout: Guarantee<Value?> = after(seconds: seconds).map { nil }
+    func nilTimeout(seconds: TimeInterval) -> Promise<Value?> {
+        let timeout: Promise<Value?> = Guarantee.after(seconds: seconds).asPromise().map { nil }
 
-        return Guarantee.race([
+        return Promise.race([
             map { (a: Value?) -> (Value?, Bool) in
                 (a, false)
             },
@@ -23,12 +23,12 @@ public extension Thenable {
         }
     }
 
-    func timeout(seconds: TimeInterval, substituteValue: Value) -> Guarantee<Value> {
-        let timeout: Guarantee<Value> = after(seconds: seconds).map {
+    func timeout(seconds: TimeInterval, substituteValue: Value) -> Promise<Value> {
+        let timeout: Promise<Value> = Guarantee.after(seconds: seconds).asPromise().map {
             return substituteValue
         }
 
-        return Guarantee.race([
+        return Promise.race([
             map { ($0, false) },
             timeout.map { ($0, true) }
         ]).map { result, didTimeout in
@@ -42,7 +42,7 @@ public extension Thenable {
 
 public extension Promise {
     func timeout(seconds: TimeInterval, description: String? = nil, timeoutErrorBlock: @escaping () -> Error) -> Promise<Value> {
-        let timeout: Promise<Value> = after(seconds: seconds).asPromise().map {
+        let timeout: Promise<Value> = Guarantee.after(seconds: seconds).asPromise().map {
             throw TimeoutError(underlyingError: timeoutErrorBlock())
         }
 
@@ -67,7 +67,7 @@ struct TimeoutError: Error {
 }
 
 public extension Thenable where Value == Void {
-    func timeout(seconds: TimeInterval) -> Guarantee<Void> {
+    func timeout(seconds: TimeInterval) -> Promise<Void> {
         return timeout(seconds: seconds, substituteValue: ())
     }
 }

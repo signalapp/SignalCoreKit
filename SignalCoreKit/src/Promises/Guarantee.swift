@@ -4,50 +4,35 @@
 
 import Foundation
 
-public final class Guarantee<T>: Thenable {
-    public typealias Value = T
-    public let future: Future<Value>
-    public var currentQueue: DispatchQueue? {
-        get { future.currentQueue }
-        set { future.currentQueue = newValue }
-    }
-    public var result: Promise<Value>.Result? { future.result }
+public final class Guarantee<Value>: Thenable {
+    public let future = Future<Value>()
+    public var result: Result<Value, Error>? { future.result }
     public var isSealed: Bool { future.isSealed }
 
-    public init(on initialQueue: DispatchQueue) {
-        self.future = Future(on: initialQueue)
-    }
+    public init() {}
 
-    public convenience init(value: Value) {
-        self.init()
-        resolve(value)
-    }
-
-    public convenience init() {
-        self.init(on: .global())
+    public static func value(_ value: Value) -> Self {
+        let guarantee = Self()
+        guarantee.resolve(value)
+        return guarantee
     }
 
     public convenience init(
-        on queue: DispatchQueue = .current,
-        _ block: @escaping () -> Value
+        _ block: (@escaping (Value) -> Void) -> Void
     ) {
-        self.init(on: queue)
-        queue.asyncIfNecessary {
-            self.resolve(block())
-        }
+        self.init()
+        block { self.resolve($0) }
     }
 
-    public convenience init<T: Thenable>(
-        on queue: DispatchQueue = .current,
-        _ block: @escaping () -> T
-    ) where T.Value == Value {
-        self.init(on: queue)
-        queue.asyncIfNecessary {
-            self.resolve(on: queue, with: block())
-        }
+    public convenience init(
+        on queue: DispatchQueue,
+        _ block: @escaping (@escaping (Value) -> Void) -> Void
+    ) {
+        self.init()
+        queue.asyncIfNecessary { block { self.resolve($0) } }
     }
 
-    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Promise<Value>.Result) -> Void) {
+    public func observe(on queue: DispatchQueue = .current, block: @escaping (Result<Value, Error>) -> Void) {
         future.observe(on: queue, block: block)
     }
 
@@ -56,7 +41,7 @@ public final class Guarantee<T>: Thenable {
     }
 
     public func resolve<T: Thenable>(
-        on queue: DispatchQueue?,
+        on queue: DispatchQueue = .current,
         with thenable: T
     ) where T.Value == Value {
         future.resolve(on: queue, with: thenable)
@@ -64,13 +49,13 @@ public final class Guarantee<T>: Thenable {
 }
 
 public extension Guarantee {
-    func wait() throws -> T {
+    func wait() -> Value {
         var result = future.result
 
         if result == nil {
             let group = DispatchGroup()
             group.enter()
-            observe { result = $0; group.leave() }
+            observe(on: .global()) { result = $0; group.leave() }
             group.wait()
         }
 
@@ -78,7 +63,68 @@ public extension Guarantee {
         case .success(let value):
             return value
         case .failure(let error):
-            throw error
+            owsFail("Unexpectedly received error result from unfailable promise \(error)")
         }
+    }
+
+    func asVoid() -> Guarantee<Void> { map { _ in } }
+}
+
+public extension Guarantee {
+    func map<T>(
+        on queue: DispatchQueue = .main,
+        _ block: @escaping (Value) -> T
+    ) -> Guarantee<T> {
+        observe(on: queue, block: block)
+    }
+
+    @discardableResult
+    func done(
+        on queue: DispatchQueue = .main,
+        _ block: @escaping (Value) -> Void
+    ) -> Guarantee<Void> {
+        observe(on: queue, block: block)
+    }
+
+    @discardableResult
+    func then<T>(
+        on queue: DispatchQueue = .main,
+        _ block: @escaping (Value) -> Guarantee<T>
+    ) -> Guarantee<T> {
+        observe(on: queue, block: block)
+    }
+}
+
+fileprivate extension Guarantee {
+    func observe<T>(
+        on queue: DispatchQueue,
+        block: @escaping (Value) -> T
+    ) -> Guarantee<T> {
+        let guarantee = Guarantee<T>()
+        observe(on: queue) { result in
+            switch result {
+            case .success(let value):
+                guarantee.resolve(block(value))
+            case .failure(let error):
+                owsFail("Unexpectedly received error result from unfailable promise \(error)")
+            }
+        }
+        return guarantee
+    }
+
+    func observe<T>(
+        on queue: DispatchQueue,
+        block: @escaping (Value) -> Guarantee<T>
+    ) -> Guarantee<T> {
+        let guarantee = Guarantee<T>()
+        observe(on: queue) { result in
+            switch result {
+            case .success(let value):
+                guarantee.resolve(on: .current, with: block(value))
+            case .failure(let error):
+                owsFail("Unexpectedly received error result from unfailable promise \(error)")
+            }
+        }
+        return guarantee
     }
 }

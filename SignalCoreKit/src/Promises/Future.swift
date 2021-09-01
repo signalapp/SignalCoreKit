@@ -5,14 +5,11 @@
 import Foundation
 
 public final class Future<Value> {
-    public typealias Result = Swift.Result<Value, Error>
+    public typealias ResultType = Swift.Result<Value, Error>
     public private(set) var isSealed = false
-    public private(set) var result: Result?
-    public var currentQueue: DispatchQueue?
+    public private(set) var result: ResultType?
 
-    public init(on initialQueue: DispatchQueue = .global()) {
-        self.currentQueue = initialQueue
-    }
+    public init() {}
 
     public convenience init(value: Value) {
         self.init()
@@ -24,16 +21,16 @@ public final class Future<Value> {
         sealResult(.failure(error))
     }
 
-    private var observers = [(Result) -> Void]()
+    private var observers = [(ResultType) -> Void]()
     private let observerLock = UnfairLock()
-    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Result) -> Void) {
+    public func observe(on queue: DispatchQueue = .current, block: @escaping (ResultType) -> Void) {
         observerLock.withLock {
-            func execute(_ result: Result) {
+            func execute(_ result: ResultType) {
                 // If a queue is not specified, try and run on the chain's
                 // current queue. Normally, promise chains run on the same
                 // queue as the previous element in the chain *without* an
                 // async dispatch.
-                (queue ?? currentQueue).asyncIfNecessary {
+                queue.asyncIfNecessary {
                     block(result)
                 }
             }
@@ -45,7 +42,7 @@ public final class Future<Value> {
             observers.append(execute)
         }
     }
-    private func sealResult(_ result: Result) {
+    private func sealResult(_ result: ResultType) {
         observerLock.withLock {
             guard !isSealed else { return }
             self.result = result
@@ -60,23 +57,21 @@ public final class Future<Value> {
     }
 
     public func resolve<T: Thenable>(
-        on queue: DispatchQueue? = nil,
+        on queue: DispatchQueue = .current,
         with thenable: T
     ) where T.Value == Value {
-        if let promise = thenable as? Promise<Value> {
-            promise.done(on: queue) { value in
-                self.sealResult(.success(value))
-            }.catch { error in
-                self.sealResult(.failure(error))
-            }
-        } else {
-            thenable.done(on: queue) { value in
-                self.sealResult(.success(value))
-            }
+        thenable.done(on: queue) { value in
+            self.sealResult(.success(value))
+        }.catch { error in
+            self.sealResult(.failure(error))
         }
     }
 
     public func reject(_ error: Error) {
         sealResult(.failure(error))
     }
+}
+
+public extension Future where Value == Void {
+    func resolve() { resolve(()) }
 }

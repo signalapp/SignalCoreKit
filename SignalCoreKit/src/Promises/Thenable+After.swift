@@ -4,11 +4,11 @@
 
 import Foundation
 
-public extension Thenable {
-    func after(seconds: TimeInterval) -> Guarantee<Void> {
+public extension Guarantee where Value == Void {
+    static func after(seconds: TimeInterval) -> Guarantee<Void> {
         let guarantee = Guarantee<Void>()
         DispatchQueue.global().asyncAfter(deadline: .now() + seconds) {
-            guarantee.resolve(())
+            guarantee.resolve()
         }
         return guarantee
     }

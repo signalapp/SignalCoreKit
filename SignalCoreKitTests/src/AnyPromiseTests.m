@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
     XCTestExpectation *expectation = [self expectationWithDescription:@"done"];
 
-    AnyPromise.withFutureOnCurrent(dispatch_get_main_queue(), ^(AnyFuture *future) { [future resolveWithValue:@1]; })
+    AnyPromise.withFuture(^(AnyFuture *future) { [future resolveWithValue:@1]; })
         .map(^(id value) {
             NSNumber *number = (NSNumber *)value;
             return @(number.integerValue + 2);
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Expect on global queue"];
     XCTestExpectation *mapExpectation = [self expectationWithDescription:@"Expect on global queue"];
-    XCTestExpectation *doneExpectation = [self expectationWithDescription:@"Expect on global queue"];
+    XCTestExpectation *doneExpectation = [self expectationWithDescription:@"Expect on main queue"];
 
     dispatch_queue_t globalQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     AnyPromise
@@ -49,14 +49,15 @@ NS_ASSUME_NONNULL_BEGIN
                 [expectation fulfill];
                 [future resolveWithValue:@"abc"];
             })
-        .map(^(id value) {
-            XCTAssertEqual(DispatchCurrentQueue(), globalQueue);
-            [mapExpectation fulfill];
-            NSString *string = (NSString *)value;
-            return [string stringByAppendingString:@"xyz"];
-        })
+        .mapOn(globalQueue,
+            ^(id value) {
+                XCTAssertEqual(DispatchCurrentQueue(), globalQueue);
+                [mapExpectation fulfill];
+                NSString *string = (NSString *)value;
+                return [string stringByAppendingString:@"xyz"];
+            })
         .done(^(id value) {
-            XCTAssertEqual(DispatchCurrentQueue(), globalQueue);
+            XCTAssertEqual(DispatchCurrentQueue(), dispatch_get_main_queue());
             NSString *string = (NSString *)value;
             XCTAssert([string isEqualToString:@"abcxyz"]);
             [doneExpectation fulfill];
