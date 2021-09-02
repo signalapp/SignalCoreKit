@@ -6,19 +6,19 @@ import Foundation
 
 @objc
 public class AnyPromise: NSObject {
-    private let anyPromise = Promise<Any>()
+    private let (anyPromise, anyFuture) = Promise<Any>.pending()
 
     public convenience init<T: Thenable>(_ thenable: T) {
         self.init()
 
         if let promise = thenable as? Promise<T.Value> {
             promise.done { value in
-                self.anyPromise.resolve(value)
+                self.anyFuture.resolve(value)
             }.catch { error in
-                self.anyPromise.reject(error)
+                self.anyFuture.reject(error)
             }
         } else {
-            thenable.done { self.anyPromise.resolve($0) }
+            thenable.done { self.anyFuture.resolve($0) }.cauterize()
         }
     }
 
@@ -35,7 +35,7 @@ public class AnyPromise: NSObject {
     public class var withFuture: ((@escaping (AnyFuture) -> Void) -> AnyPromise) {
         { block in
             let promise = AnyPromise()
-            block(AnyFuture(promise.anyPromise.future))
+            block(AnyFuture(promise.anyFuture))
             return promise
         }
     }
@@ -46,7 +46,7 @@ public class AnyPromise: NSObject {
         { queue, block in
             let promise = AnyPromise()
             queue.async {
-                block(AnyFuture(promise.anyPromise.future))
+                block(AnyFuture(promise.anyFuture))
             }
             return promise
         }
@@ -55,7 +55,7 @@ public class AnyPromise: NSObject {
     @objc
     public convenience init(future: (AnyFuture) -> Void) {
         self.init()
-        future(AnyFuture(anyPromise.future))
+        future(AnyFuture(anyFuture))
     }
 
     public required override init() {
@@ -182,15 +182,15 @@ extension AnyPromise: Thenable, Catchable {
     }
 
     public func resolve(_ value: Any) {
-        anyPromise.resolve(value)
+        anyFuture.resolve(value)
     }
 
     public func resolve<T>(on queue: DispatchQueue? = nil, with thenable: T) where T: Thenable, Any == T.Value {
-        anyPromise.resolve(on: queue, with: thenable)
+        anyFuture.resolve(on: queue, with: thenable)
     }
 
     public func reject(_ error: Error) {
-        anyPromise.reject(error)
+        anyFuture.reject(error)
     }
 }
 

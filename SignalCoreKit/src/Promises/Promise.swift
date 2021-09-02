@@ -9,7 +9,7 @@ public enum PromiseError: String, Error {
 }
 
 public final class Promise<Value>: Thenable, Catchable {
-    public let future: Future<Value>
+    private let future: Future<Value>
     public var result: Result<Value, Error>? { future.result }
     public var isSealed: Bool { future.isSealed }
 
@@ -23,7 +23,7 @@ public final class Promise<Value>: Thenable, Catchable {
 
     public static func value(_ value: Value) -> Self {
         let promise = Self()
-        promise.resolve(value)
+        promise.future.resolve(value)
         return promise
     }
 
@@ -38,7 +38,7 @@ public final class Promise<Value>: Thenable, Catchable {
         do {
             try block(self.future)
         } catch {
-            self.reject(error)
+            self.future.reject(error)
         }
     }
 
@@ -51,7 +51,7 @@ public final class Promise<Value>: Thenable, Catchable {
             do {
                 try block(self.future)
             } catch {
-                self.reject(error)
+                self.future.reject(error)
             }
         }
     }
@@ -59,17 +59,6 @@ public final class Promise<Value>: Thenable, Catchable {
     public func observe(on queue: DispatchQueue? = nil, block: @escaping (Result<Value, Error>) -> Void) {
         future.observe(on: queue, block: block)
     }
-
-    public func resolve(_ value: Value) { future.resolve(value) }
-
-    public func resolve<T: Thenable>(
-        on queue: DispatchQueue? = nil,
-        with thenable: T
-    ) where T.Value == Value {
-        future.resolve(on: queue, with: thenable)
-    }
-
-    public func reject(_ error: Error) { future.reject(error) }
 }
 
 public extension Promise {
@@ -101,11 +90,11 @@ public extension Promise {
 
 public extension Guarantee {
     func asPromise() -> Promise<Value> {
-        let promise = Promise<Value>()
+        let (promise, future) = Promise<Value>.pending()
         observe { result in
             switch result {
             case .success(let value):
-                promise.resolve(value)
+                future.resolve(value)
             case .failure(let error):
                 owsFail("Unexpectedly received error result from unfailable promise \(error)")
             }

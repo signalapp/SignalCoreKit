@@ -5,15 +5,20 @@
 import Foundation
 
 public final class Guarantee<Value>: Thenable {
-    public let future = Future<Value>()
+    private let future = Future<Value>()
     public var result: Result<Value, Error>? { future.result }
     public var isSealed: Bool { future.isSealed }
+
+    class func pending() -> (Guarantee<Value>, GuaranteeFuture<Value>) {
+        let guarantee = Guarantee<Value>()
+        return (guarantee, GuaranteeFuture(future: guarantee.future))
+    }
 
     public init() {}
 
     public static func value(_ value: Value) -> Self {
         let guarantee = Self()
-        guarantee.resolve(value)
+        guarantee.future.resolve(value)
         return guarantee
     }
 
@@ -21,7 +26,7 @@ public final class Guarantee<Value>: Thenable {
         _ block: (@escaping (Value) -> Void) -> Void
     ) {
         self.init()
-        block { self.resolve($0) }
+        block { self.future.resolve($0) }
     }
 
     public convenience init(
@@ -29,22 +34,11 @@ public final class Guarantee<Value>: Thenable {
         _ block: @escaping (@escaping (Value) -> Void) -> Void
     ) {
         self.init()
-        queue.asyncIfNecessary { block { self.resolve($0) } }
+        queue.asyncIfNecessary { block { self.future.resolve($0) } }
     }
 
     public func observe(on queue: DispatchQueue? = nil, block: @escaping (Result<Value, Error>) -> Void) {
         future.observe(on: queue, block: block)
-    }
-
-    public func resolve(_ value: Value) {
-        future.resolve(value)
-    }
-
-    public func resolve<T: Thenable>(
-        on queue: DispatchQueue? = nil,
-        with thenable: T
-    ) where T.Value == Value {
-        future.resolve(on: queue, with: thenable)
     }
 }
 
@@ -100,11 +94,11 @@ fileprivate extension Guarantee {
         on queue: DispatchQueue? = nil,
         block: @escaping (Value) -> T
     ) -> Guarantee<T> {
-        let guarantee = Guarantee<T>()
+        let (guarantee, future) = Guarantee<T>.pending()
         observe(on: queue) { result in
             switch result {
             case .success(let value):
-                guarantee.resolve(block(value))
+                future.resolve(block(value))
             case .failure(let error):
                 owsFail("Unexpectedly received error result from unfailable promise \(error)")
             }
@@ -116,15 +110,29 @@ fileprivate extension Guarantee {
         on queue: DispatchQueue? = nil,
         block: @escaping (Value) -> Guarantee<T>
     ) -> Guarantee<T> {
-        let guarantee = Guarantee<T>()
+        let (guarantee, future) = Guarantee<T>.pending()
         observe(on: queue) { result in
             switch result {
             case .success(let value):
-                guarantee.resolve(on: queue, with: block(value))
+                future.resolve(on: queue, with: block(value))
             case .failure(let error):
                 owsFail("Unexpectedly received error result from unfailable promise \(error)")
             }
         }
         return guarantee
     }
+}
+
+public struct GuaranteeFuture<Value> {
+    private let future: Future<Value>
+    fileprivate init(future: Future<Value>) { self.future = future }
+    public var isSealed: Bool { future.isSealed }
+    public func resolve(_ value: Value) { future.resolve(value) }
+    public func resolve<T: Thenable>(on queue: DispatchQueue? = nil, with thenable: T) where T.Value == Value {
+        future.resolve(on: queue, with: thenable)
+    }
+}
+
+public extension GuaranteeFuture where Value == Void {
+    func resolve() { resolve(()) }
 }

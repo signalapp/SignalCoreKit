@@ -4,9 +4,7 @@
 
 import Foundation
 
-public protocol Catchable: Thenable {
-    func reject(_ error: Error)
-}
+public protocol Catchable: Thenable {}
 
 public extension Catchable {
     @discardableResult
@@ -56,18 +54,18 @@ fileprivate extension Thenable where Self: Catchable {
         successBlock: @escaping (Value) throws -> T,
         failureBlock: @escaping (Error) throws -> Void = { _ in }
     ) -> Promise<T> {
-        let promise = Promise<T>()
+        let (promise, future) = Promise<T>.pending()
         observe(on: queue) { result in
             do {
                 switch result {
                 case .success(let value):
-                    promise.resolve(try successBlock(value))
+                    future.resolve(try successBlock(value))
                 case .failure(let error):
                     try failureBlock(error)
-                    promise.reject(error)
+                    future.reject(error)
                 }
             } catch {
-                promise.reject(error)
+                future.reject(error)
             }
         }
         return promise
@@ -78,13 +76,13 @@ fileprivate extension Thenable where Self: Catchable {
         successBlock: @escaping (Value) -> Value,
         failureBlock: @escaping (Error) -> Value
     ) -> Guarantee<Value> {
-        let guarantee = Guarantee<Value>()
+        let (guarantee, future) = Guarantee<Value>.pending()
         observe(on: queue) { result in
             switch result {
             case .success(let value):
-                guarantee.resolve(successBlock(value))
+                future.resolve(successBlock(value))
             case .failure(let error):
-                guarantee.resolve(failureBlock(error))
+                future.resolve(failureBlock(error))
             }
         }
         return guarantee
@@ -95,13 +93,13 @@ fileprivate extension Thenable where Self: Catchable {
         successBlock: @escaping (Value) -> Value,
         failureBlock: @escaping (Error) -> Guarantee<Value>
     ) -> Guarantee<Value> {
-        let guarantee = Guarantee<Value>()
+        let (guarantee, future) = Guarantee<Value>.pending()
         observe(on: queue) { result in
             switch result {
             case .success(let value):
-                guarantee.resolve(successBlock(value))
+                future.resolve(successBlock(value))
             case .failure(let error):
-                guarantee.resolve(on: queue, with: failureBlock(error))
+                future.resolve(on: queue, with: failureBlock(error))
             }
         }
         return guarantee
@@ -112,17 +110,17 @@ fileprivate extension Thenable where Self: Catchable {
         successBlock: @escaping (Value) throws -> Value,
         failureBlock: @escaping (Error) throws -> Value
     ) -> Promise<Value> {
-        let promise = Promise<Value>()
+        let (promise, future) = Promise<Value>.pending()
         observe(on: queue) { result in
             do {
                 switch result {
                 case .success(let value):
-                    promise.resolve(try successBlock(value))
+                    future.resolve(try successBlock(value))
                 case .failure(let error):
-                    promise.resolve(try failureBlock(error))
+                    future.resolve(try failureBlock(error))
                 }
             } catch {
-                promise.reject(error)
+                future.reject(error)
             }
         }
         return promise
@@ -133,17 +131,17 @@ fileprivate extension Thenable where Self: Catchable {
         successBlock: @escaping (Value) throws -> Value,
         failureBlock: @escaping (Error) throws -> T
     ) -> Promise<Value> where T.Value == Value {
-        let promise = Promise<Value>()
+        let (promise, future) = Promise<Value>.pending()
         observe(on: queue) { result in
             do {
                 switch result {
                 case .success(let value):
-                    promise.resolve(try successBlock(value))
+                    future.resolve(try successBlock(value))
                 case .failure(let error):
-                    promise.resolve(on: queue, with: try failureBlock(error))
+                    future.resolve(on: queue, with: try failureBlock(error))
                 }
             } catch {
-                promise.reject(error)
+                future.reject(error)
             }
         }
         return promise

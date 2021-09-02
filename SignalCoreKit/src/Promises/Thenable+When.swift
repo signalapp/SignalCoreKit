@@ -46,7 +46,7 @@ fileprivate extension Thenable {
 
         var pendingPromiseCount = thenables.count
 
-        let returnPromise = Promise<Void>()
+        let (returnPromise, future) = Promise<Void>.pending()
 
         let lock = UnfairLock()
 
@@ -55,12 +55,12 @@ fileprivate extension Thenable {
                 lock.withLock {
                     switch result {
                     case .success:
-                        guard !returnPromise.future.isSealed else { return }
+                        guard !future.isSealed else { return }
                         pendingPromiseCount -= 1
-                        if pendingPromiseCount == 0 { returnPromise.resolve() }
+                        if pendingPromiseCount == 0 { future.resolve() }
                     case .failure(let error):
-                        guard !returnPromise.future.isSealed else { return }
-                        returnPromise.reject(error)
+                        guard !future.isSealed else { return }
+                        future.reject(error)
                     }
                 }
             }
@@ -92,7 +92,7 @@ fileprivate extension Thenable {
 
         var pendingPromiseCount = thenables.count
 
-        let returnGuarantee = Guarantee<Void>()
+        let (returnGuarantee, future) = Guarantee<Void>.pending()
 
         let lock = UnfairLock()
 
@@ -100,7 +100,7 @@ fileprivate extension Thenable {
             thenable.observe(on: nil) { _ in
                 lock.withLock {
                     pendingPromiseCount -= 1
-                    if pendingPromiseCount == 0 { returnGuarantee.resolve() }
+                    if pendingPromiseCount == 0 { future.resolve() }
                 }
             }
         }

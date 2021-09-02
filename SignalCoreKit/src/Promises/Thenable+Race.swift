@@ -10,17 +10,17 @@ public extension Thenable {
     }
 
     static func race<T: Thenable>(_ thenables: [T]) -> Promise<T.Value> where T.Value == Value {
-        let returnPromise = Promise<T.Value>()
+        let (returnPromise, future) = Promise<T.Value>.pending()
 
         for thenable in thenables {
             thenable.observe(on: nil) { result in
                 switch result {
                 case .success(let result):
-                    guard !returnPromise.future.isSealed else { return }
-                    returnPromise.resolve(result)
+                    guard !future.isSealed else { return }
+                    future.resolve(result)
                 case .failure(let error):
-                    guard !returnPromise.future.isSealed else { return }
-                    returnPromise.reject(error)
+                    guard !future.isSealed else { return }
+                    future.reject(error)
                 }
             }
         }

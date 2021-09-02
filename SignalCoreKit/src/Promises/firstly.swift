@@ -7,11 +7,11 @@ import Foundation
 public func firstly<T: Thenable>(
     _ block: () throws -> T
 ) -> Promise<T.Value> {
-    let promise = Promise<T.Value>()
+    let (promise, future) = Promise<T.Value>.pending()
     do {
-        promise.resolve(with: try block())
+        future.resolve(with: try block())
     } catch {
-        promise.reject(error)
+        future.reject(error)
     }
     return promise
 }
@@ -20,12 +20,12 @@ public func firstly<T: Thenable>(
     on queue: DispatchQueue,
     _ block: @escaping () throws -> T
 ) -> Promise<T.Value> {
-    let promise = Promise<T.Value>()
+    let (promise, future) = Promise<T.Value>.pending()
     queue.asyncIfNecessary {
         do {
-            promise.resolve(on: queue, with: try block())
+            future.resolve(on: queue, with: try block())
         } catch {
-            promise.reject(error)
+            future.reject(error)
         }
     }
     return promise
@@ -35,12 +35,12 @@ public func firstly<T>(
     on queue: DispatchQueue,
     _ block: @escaping () throws -> T
 ) -> Promise<T> {
-    let promise = Promise<T>()
+    let (promise, future) = Promise<T>.pending()
     queue.asyncIfNecessary {
         do {
-            promise.resolve(try block())
+            future.resolve(try block())
         } catch {
-            promise.reject(error)
+            future.reject(error)
         }
     }
     return promise
@@ -50,9 +50,9 @@ public func firstly<T>(
     on queue: DispatchQueue,
     _ block: @escaping () -> T
 ) -> Guarantee<T> {
-    let guarantee = Guarantee<T>()
+    let (guarantee, future) = Guarantee<T>.pending()
     queue.asyncIfNecessary {
-        guarantee.resolve(block())
+        future.resolve(block())
     }
     return guarantee
 }

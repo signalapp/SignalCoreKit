@@ -18,19 +18,19 @@ public extension DispatchQueue {
         }
     }
     func async<T>(_ namespace: PromiseNamespace, execute work: @escaping () -> T) -> Guarantee<T> {
-        let guarantee = Guarantee<T>()
+        let (guarantee, future) = Guarantee<T>.pending()
         async {
-            guarantee.resolve(work())
+            future.resolve(work())
         }
         return guarantee
     }
     func async<T>(_ namespace: PromiseNamespace, execute work: @escaping () throws -> T) -> Promise<T> {
-        let promise = Promise<T>()
+        let (promise, future) = Promise<T>.pending()
         async {
             do {
-                promise.resolve(try work())
+                future.resolve(try work())
             } catch {
-                promise.reject(error)
+                future.reject(error)
             }
         }
         return promise
