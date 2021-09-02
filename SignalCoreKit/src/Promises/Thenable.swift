@@ -8,28 +8,28 @@ public protocol Thenable: AnyObject {
     associatedtype Value
     var result: Result<Value, Error>? { get }
     init()
-    func observe(on queue: DispatchQueue, block: @escaping (Result<Value, Error>) -> Void)
+    func observe(on queue: DispatchQueue?, block: @escaping (Result<Value, Error>) -> Void)
     func resolve(_ value: Value)
-    func resolve<T: Thenable>(on queue: DispatchQueue, with thenable: T) where T.Value == Value
+    func resolve<T: Thenable>(on queue: DispatchQueue?, with thenable: T) where T.Value == Value
 }
 
 public extension Thenable {
     func map<T>(
-        on queue: DispatchQueue = .main,
+        on queue: DispatchQueue? = nil,
         _ block: @escaping (Value) throws -> T
     ) -> Promise<T> {
         observe(on: queue, block: block)
     }
 
     func done(
-        on queue: DispatchQueue = .main,
+        on queue: DispatchQueue? = nil,
         _ block: @escaping (Value) throws -> Void
     ) -> Promise<Void> {
         observe(on: queue, block: block)
     }
 
     func then<T: Thenable>(
-        on queue: DispatchQueue = .main,
+        on queue: DispatchQueue? = nil,
         _ block: @escaping (Value) throws -> T
     ) -> Promise<T.Value> {
         let promise = Promise<T.Value>()
@@ -37,7 +37,7 @@ public extension Thenable {
             do {
                 switch result {
                 case .success(let value):
-                    promise.resolve(on: .current, with: try block(value))
+                    promise.resolve(on: queue, with: try block(value))
                 case .failure(let error):
                     promise.reject(error)
                 }
@@ -58,7 +58,7 @@ public extension Thenable {
 
 fileprivate extension Thenable {
     func observe<T>(
-        on queue: DispatchQueue,
+        on queue: DispatchQueue?,
         block: @escaping (Value) throws -> T
     ) -> Promise<T> {
         let promise = Promise<T>()

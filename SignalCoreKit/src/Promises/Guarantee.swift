@@ -32,7 +32,7 @@ public final class Guarantee<Value>: Thenable {
         queue.asyncIfNecessary { block { self.resolve($0) } }
     }
 
-    public func observe(on queue: DispatchQueue = .current, block: @escaping (Result<Value, Error>) -> Void) {
+    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Result<Value, Error>) -> Void) {
         future.observe(on: queue, block: block)
     }
 
@@ -41,7 +41,7 @@ public final class Guarantee<Value>: Thenable {
     }
 
     public func resolve<T: Thenable>(
-        on queue: DispatchQueue = .current,
+        on queue: DispatchQueue? = nil,
         with thenable: T
     ) where T.Value == Value {
         future.resolve(on: queue, with: thenable)
@@ -72,7 +72,7 @@ public extension Guarantee {
 
 public extension Guarantee {
     func map<T>(
-        on queue: DispatchQueue = .main,
+        on queue: DispatchQueue? = nil,
         _ block: @escaping (Value) -> T
     ) -> Guarantee<T> {
         observe(on: queue, block: block)
@@ -80,7 +80,7 @@ public extension Guarantee {
 
     @discardableResult
     func done(
-        on queue: DispatchQueue = .main,
+        on queue: DispatchQueue? = nil,
         _ block: @escaping (Value) -> Void
     ) -> Guarantee<Void> {
         observe(on: queue, block: block)
@@ -88,7 +88,7 @@ public extension Guarantee {
 
     @discardableResult
     func then<T>(
-        on queue: DispatchQueue = .main,
+        on queue: DispatchQueue? = nil,
         _ block: @escaping (Value) -> Guarantee<T>
     ) -> Guarantee<T> {
         observe(on: queue, block: block)
@@ -97,7 +97,7 @@ public extension Guarantee {
 
 fileprivate extension Guarantee {
     func observe<T>(
-        on queue: DispatchQueue,
+        on queue: DispatchQueue? = nil,
         block: @escaping (Value) -> T
     ) -> Guarantee<T> {
         let guarantee = Guarantee<T>()
@@ -113,14 +113,14 @@ fileprivate extension Guarantee {
     }
 
     func observe<T>(
-        on queue: DispatchQueue,
+        on queue: DispatchQueue? = nil,
         block: @escaping (Value) -> Guarantee<T>
     ) -> Guarantee<T> {
         let guarantee = Guarantee<T>()
         observe(on: queue) { result in
             switch result {
             case .success(let value):
-                guarantee.resolve(on: .current, with: block(value))
+                guarantee.resolve(on: queue, with: block(value))
             case .failure(let error):
                 owsFail("Unexpectedly received error result from unfailable promise \(error)")
             }

@@ -9,7 +9,7 @@ public func firstly<T: Thenable>(
 ) -> Promise<T.Value> {
     let promise = Promise<T.Value>()
     do {
-        promise.resolve(on: .current, with: try block())
+        promise.resolve(with: try block())
     } catch {
         promise.reject(error)
     }

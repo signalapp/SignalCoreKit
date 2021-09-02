@@ -177,7 +177,7 @@ extension AnyPromise: Thenable, Catchable {
 
     public var result: Result<Value, Error>? { anyPromise.result }
 
-    public func observe(on queue: DispatchQueue = .main, block: @escaping (Result<Value, Error>) -> Void) {
+    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Result<Value, Error>) -> Void) {
         anyPromise.observe(on: queue, block: block)
     }
 
@@ -185,7 +185,7 @@ extension AnyPromise: Thenable, Catchable {
         anyPromise.resolve(value)
     }
 
-    public func resolve<T>(on queue: DispatchQueue = .main, with thenable: T) where T: Thenable, Any == T.Value {
+    public func resolve<T>(on queue: DispatchQueue? = nil, with thenable: T) where T: Thenable, Any == T.Value {
         anyPromise.resolve(on: queue, with: thenable)
     }
 

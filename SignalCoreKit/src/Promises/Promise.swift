@@ -56,14 +56,14 @@ public final class Promise<Value>: Thenable, Catchable {
         }
     }
 
-    public func observe(on queue: DispatchQueue = .current, block: @escaping (Result<Value, Error>) -> Void) {
+    public func observe(on queue: DispatchQueue? = nil, block: @escaping (Result<Value, Error>) -> Void) {
         future.observe(on: queue, block: block)
     }
 
     public func resolve(_ value: Value) { future.resolve(value) }
 
     public func resolve<T: Thenable>(
-        on queue: DispatchQueue = .current,
+        on queue: DispatchQueue? = nil,
         with thenable: T
     ) where T.Value == Value {
         future.resolve(on: queue, with: thenable)

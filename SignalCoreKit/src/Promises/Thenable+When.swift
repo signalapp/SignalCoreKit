@@ -51,7 +51,7 @@ fileprivate extension Thenable {
         let lock = UnfairLock()
 
         for thenable in thenables {
-            thenable.observe(on: .current) { result in
+            thenable.observe(on: nil) { result in
                 lock.withLock {
                     switch result {
                     case .success:
@@ -97,7 +97,7 @@ fileprivate extension Thenable {
         let lock = UnfairLock()
 
         for thenable in thenables {
-            thenable.observe(on: .current) { _ in
+            thenable.observe(on: nil) { _ in
                 lock.withLock {
                     pendingPromiseCount -= 1
                     if pendingPromiseCount == 0 { returnGuarantee.resolve() }
