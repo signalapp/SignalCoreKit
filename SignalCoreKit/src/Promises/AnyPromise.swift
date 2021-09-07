@@ -21,12 +21,20 @@ public class AnyPromise: NSObject {
             thenable.done { self.anyFuture.resolve($0) }.cauterize()
         }
     }
-
+    
     @objc
     @available(swift, obsoleted: 1.0)
     public class func promiseWithValue(_ value: Any) -> AnyPromise {
         let promise = AnyPromise()
         promise.resolve(value)
+        return promise
+    }
+    
+    @objc
+    @available(swift, obsoleted: 1.0)
+    public class func promiseWithError(_ error: Error) -> AnyPromise {
+        let promise = AnyPromise()
+        promise.reject(error)
         return promise
     }
 
