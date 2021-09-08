@@ -32,7 +32,7 @@ void DispatchSyncMainThreadSafe(dispatch_block_t block)
     }
 }
 
-BOOL DispatchQueueIsProbablyCurrentQueue(dispatch_queue_t testQueue)
+BOOL DispatchQueueIsCurrentQueue(dispatch_queue_t testQueue)
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

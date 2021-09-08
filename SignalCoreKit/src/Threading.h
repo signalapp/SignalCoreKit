@@ -18,6 +18,6 @@ void DispatchSyncMainThreadSafe(dispatch_block_t block);
 /// the provided queue. There's all sorts of different circumstances where these queue
 /// comparisons may fail (queue hierarchies, etc.) so this should only be used optimistically
 /// for perf optimizations. This should never be used to determine if some pattern of block dispatch is deadlock free.
-BOOL DispatchQueueIsProbablyCurrentQueue(dispatch_queue_t queue);
+BOOL DispatchQueueIsCurrentQueue(dispatch_queue_t queue);
 
 NS_ASSUME_NONNULL_END
