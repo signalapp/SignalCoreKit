@@ -83,28 +83,13 @@ NSError *SCKExceptionWrapperErrorMake(NSException *exception);
 ///         [foo throws_foo];
 ///     }
 
+NS_SWIFT_UNAVAILABLE("throws objc exceptions")
 @interface SCKExceptionWrapper: NSObject
+
 + (BOOL)tryBlock:(void (^)(void))block error:(NSError **)outError;
+
 @end
 
 void SCKRaiseIfExceptionWrapperError(NSError *_Nullable error) NS_SWIFT_UNAVAILABLE("throws objc exceptions");
-
-#define SCKExceptionLogger(__label, __block, __errorBlock)                  \
-    [SCKExceptionWrapper __exceptionLoggerWithLabel:__label                 \
-                                               file:__FILE__                \
-                                           function:__PRETTY_FUNCTION__],   \
-                                               line:__LINE,                 \
-                                              block:__block                 \
-                                         errorBlock:__errorBlock];
-
-// Use the macro instead please
-@interface SCKExceptionWrapper (MacroOnly)
-+ (void)__exceptionLoggerWithLabel:(NSString *)label
-                              file:(const char *)file
-                          function:(const char *)function
-                              line:(NSInteger)line
-                             block:(void (NS_NOESCAPE ^)(void))tryBlock
-                        errorBlock:(void (NS_NOESCAPE ^_Nullable)(void))errorBlock;
-@end
 
 NS_ASSUME_NONNULL_END
