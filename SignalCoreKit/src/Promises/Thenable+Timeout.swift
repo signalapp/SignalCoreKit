@@ -41,8 +41,13 @@ public extension Thenable {
 }
 
 public extension Promise {
-    func timeout(seconds: TimeInterval, description: String? = nil, timeoutErrorBlock: @escaping () -> Error) -> Promise<Value> {
-        let timeout: Promise<Value> = Guarantee.after(seconds: seconds).asPromise().map {
+    func timeout(
+        seconds: TimeInterval,
+        ticksWhileSuspended: Bool = false,
+        description: String? = nil, timeoutErrorBlock: @escaping () -> Error
+    ) -> Promise<Value> {
+        let guarantee = ticksWhileSuspended ? Guarantee.after(wallInterval: seconds) : Guarantee.after(seconds: seconds)
+        let timeout: Promise<Value> = guarantee.asPromise().map {
             throw TimeoutError(underlyingError: timeoutErrorBlock())
         }
 
