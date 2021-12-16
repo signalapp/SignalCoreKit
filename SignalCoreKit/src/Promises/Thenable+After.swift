@@ -10,8 +10,8 @@ public extension Guarantee where Value == Void {
     static func after(seconds: TimeInterval) -> Guarantee<Void> {
         let (guarantee, future) = Guarantee<Void>.pending()
 
-        let isMainApp = (ProcessInfo.processInfo.processName == "Signal")
-        if !isMainApp && seconds > 2.0 {
+        let isAppExtension = ProcessInfo.processInfo.processName.hasSuffix("appex")
+        if isAppExtension && seconds > 2.0 {
             // App extensions have shorter lifecycles and are under more restrictive memory limits
             // For short-lived extensions (e.g. the NSE), the future make not resolve for a long time effectively
             // leaking any objects captured by the promise resolve block.
