@@ -21,21 +21,46 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)info:(NSString *)logString
 {
     DDLogInfo(@"💛 %@", logString);
+    if (self.aggressiveFlushing) {
+        [self flush];
+    }
 }
 
 + (void)warn:(NSString *)logString
 {
     DDLogWarn(@"🧡 %@", logString);
+    if (self.aggressiveFlushing) {
+        [self flush];
+    }
 }
 
 + (void)error:(NSString *)logString
 {
     DDLogError(@"❤️ %@", logString);
+    if (self.aggressiveFlushing) {
+        [self flush];
+    }
 }
 
 + (void)flush
 {
     OWSLogFlush();
+}
+
+static BOOL aggressiveLogFlushingEnabled = NO;
+
++ (BOOL)aggressiveFlushing
+{
+    @synchronized (self) {
+        return aggressiveLogFlushingEnabled;
+    }
+}
+
++ (void)setAggressiveFlushing:(BOOL)isEnabled
+{
+    @synchronized (self) {
+        aggressiveLogFlushingEnabled = isEnabled;
+    }
 }
 
 @end
