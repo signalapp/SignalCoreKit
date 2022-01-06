@@ -3,6 +3,7 @@
 //
 
 #import "OWSLogs.h"
+#import <stdatomic.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -47,19 +48,17 @@ NS_ASSUME_NONNULL_BEGIN
     OWSLogFlush();
 }
 
-static BOOL aggressiveLogFlushingEnabled = NO;
+static _Atomic BOOL _aggressiveLogFlushingEnabled = ATOMIC_VAR_INIT(NO);
 
 + (BOOL)aggressiveFlushing
 {
-    @synchronized (self) {
-        return aggressiveLogFlushingEnabled;
-    }
+    return atomic_load(&_aggressiveLogFlushingEnabled);
 }
 
 + (void)setAggressiveFlushing:(BOOL)isEnabled
 {
-    @synchronized (self) {
-        aggressiveLogFlushingEnabled = isEnabled;
+    if (atomic_exchange(&_aggressiveLogFlushingEnabled, isEnabled) != isEnabled) {
+        [self warn:[NSString stringWithFormat:@"%@ aggressive log flushing", isEnabled ? @"Enabled" : @"Disabled"]];
     }
 }
 
