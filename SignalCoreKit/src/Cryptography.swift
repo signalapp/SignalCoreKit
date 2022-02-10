@@ -201,8 +201,8 @@ public extension Cryptography {
     fileprivate static let aesKeySize = 32
 
     class func paddedSize(unpaddedSize: UInt) -> UInt {
-        // In order to obsfucate attachment size on the wire, we round up
-        // attachement plaintext bytes to the nearest power of 1.05. This
+        // In order to obfuscate attachment size on the wire, we round up
+        // attachment plaintext bytes to the nearest power of 1.05. This
         // number was selected as it provides a good balance between number
         // of buckets and wasted bytes on the wire.
         return UInt(max(541, floor(pow(1.05, ceil(log(Double(unpaddedSize)) / log(1.05))))))
@@ -367,7 +367,7 @@ public extension Cryptography {
             throw try eraseOutputFileAndError("Failed to read IV")
         }
 
-        // The metadata "key" is actually a concatentation of the
+        // The metadata "key" is actually a concatenation of the
         // encryption key and the hmac key.
         let encryptionKey = metadata.key.prefix(aesKeySize)
         let hmacKey = metadata.key.suffix(hmac256KeyLength)
