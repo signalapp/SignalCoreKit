@@ -43,12 +43,16 @@ public final class Future<Value> {
         }
     }
     private func sealResult(_ result: ResultType) {
-        lock.withLock {
-            guard self.resultUnsynchronized == nil else { return }
+        let observers: [(ResultType) -> Void] = lock.withLock {
+            guard self.resultUnsynchronized == nil else { return [] }
             self.resultUnsynchronized = result
-            observersUnsynchronized.forEach { $0(result) }
+
+            let observers = observersUnsynchronized
             observersUnsynchronized.removeAll()
+            return observers
         }
+
+        observers.forEach { $0(result) }
     }
 
     public func resolve(_ value: Value) {
