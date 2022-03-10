@@ -4,8 +4,8 @@
 
 import Foundation
 
-@objc(appBundle)
 public extension Bundle {
+    @objc(appBundle)
     var app: Bundle {
         get {
             if self.bundleURL.pathExtension == "appex" {
@@ -22,6 +22,7 @@ public extension Bundle {
     }
 }
 
+@inlinable
 public func OWSLocalizedString(_ key: String, tableName: String? = nil, value: String = "", comment: String) -> String {
     return NSLocalizedString(key, tableName: tableName, bundle: .main.app, value: value, comment: comment)
 }

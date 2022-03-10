@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "SignalCoreKit"
-  s.version          = "1.0.1"
+  s.version          = "1.0.0"
   s.summary          = "A Swift & Objective-C library used by other Signal libraries."
 
   s.description      = <<-DESC

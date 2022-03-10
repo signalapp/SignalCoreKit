@@ -15,7 +15,5 @@ FOUNDATION_EXPORT const unsigned char SignalCoreKitVersionString[];
 #import <SignalCoreKit/SCKError.h>
 #import <SignalCoreKit/UnfairLock.h>
 
-#ifdef __OBJC__
-    #define OWSLocalizedString(key, comment) \
-        [[NSBundle mainBundle].app localizedStringForKey:(key) value:@"" table:nil]
-#endif
+#define OWSLocalizedString(key, comment) \
+    [[NSBundle mainBundle].appBundle localizedStringForKey:(key) value:@"" table:nil]
