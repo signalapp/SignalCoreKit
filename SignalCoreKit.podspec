@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => "https://github.com/signalapp/SignalCoreKit.git", :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/signalapp'
 
-  s.platform     = :ios, '10.0'
+  s.platform     = :ios, '12.2'
   s.requires_arc = true
 
   s.swift_version = '5.0'
