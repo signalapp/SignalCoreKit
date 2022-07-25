@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    name: Build and Test
+
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Run pod lib lint
+        run: ./bin/build_and_test.sh
