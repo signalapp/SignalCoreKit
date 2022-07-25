@@ -23,9 +23,6 @@ const NSUInteger kAES256CTR_IVLength = 16;
 // length of authentication tag for AES256-GCM
 static const NSUInteger kAESGCM256_TagLength = 16;
 
-// length of key used for websocket envelope authentication
-static const NSUInteger kHMAC256_EnvelopeKeyLength = 20;
-
 const NSUInteger kAES256_KeyByteLength = 32;
 
 @implementation OWSAES256Key

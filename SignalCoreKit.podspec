@@ -10,11 +10,6 @@ Pod::Spec.new do |s|
   s.name             = "SignalCoreKit"
   s.version          = "1.0.0"
   s.summary          = "A Swift & Objective-C library used by other Signal libraries."
-
-  s.description      = <<-DESC
-A Swift & Objective-C library used by other Signal libraries.
-  DESC
-
   s.homepage         = "https://github.com/signalapp/SignalCoreKit"
   s.license          = 'GPLv3'
   s.author           = { "iOS Team" => "ios@signal.org" }
@@ -23,6 +18,8 @@ A Swift & Objective-C library used by other Signal libraries.
 
   s.platform     = :ios, '10.0'
   s.requires_arc = true
+
+  s.swift_version = '5.0'
 
   s.source_files  = 'SignalCoreKit/src/**/*.{h,m,mm,swift}', 'SignalCoreKit/Private/**/*.{h,m,mm,swift}'
 
