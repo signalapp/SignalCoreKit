@@ -261,7 +261,7 @@ static unichar bidiPopDirectionalIsolate = 0x2069;
 }
 
 
-- (BOOL)isOnlyASCII;
+- (BOOL)isOnlyASCII
 {
     return [self.class.onlyASCIIRegex rangeOfFirstMatchInString:self
                                                         options:0
