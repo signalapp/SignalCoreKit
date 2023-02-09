@@ -29,7 +29,6 @@ Pod::Spec.new do |s|
   s.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DSQLITE_HAS_CODEC' }
 
   s.dependency 'CocoaLumberjack'
-  s.dependency 'OpenSSL-Universal'
 
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = 'SignalCoreKitTests/src/**/*.{h,m,swift}'
