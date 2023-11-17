@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   s.prefix_header_file = 'SignalCoreKit/SCKPrefix.h'
   s.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DSQLITE_HAS_CODEC' }
 
-  s.dependency 'CocoaLumberjack'
+  s.dependency 'CocoaLumberjack', '~> 3.7.4'
 
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = 'SignalCoreKitTests/src/**/*.{h,m,swift}'
