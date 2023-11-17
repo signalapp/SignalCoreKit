@@ -44,11 +44,11 @@ static inline BOOL ShouldLogError(void)
 
 @interface OWSLogger : NSObject
 
-+ (void)verbose:(NSString *)logString __attribute__((deprecated));
-+ (void)debug:(NSString *)logString __attribute__((deprecated));
-+ (void)info:(NSString *)logString __attribute__((deprecated));
-+ (void)warn:(NSString *)logString __attribute__((deprecated));
-+ (void)error:(NSString *)logString __attribute__((deprecated));
++ (void)verbose:(NSString *)logString;
++ (void)debug:(NSString *)logString;
++ (void)info:(NSString *)logString;
++ (void)warn:(NSString *)logString;
++ (void)error:(NSString *)logString;
 
 @end
 
