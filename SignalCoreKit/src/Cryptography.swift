@@ -198,9 +198,83 @@ public extension Cryptography {
         }
         let outputFile = try FileHandle(forWritingTo: encryptedUrl)
 
-        let iv = generateRandomBytes(UInt(aescbcIVLength))
         let encryptionKey = generateRandomBytes(UInt(aesKeySize))
         let hmacKey = generateRandomBytes(UInt(hmac256KeyLength))
+
+        return try _encryptAttachment(
+            enumerateInputInBlocks: { closure in
+                try inputFile.enumerateInBlocks(block: closure)
+                return UInt(inputFile.offsetInFile)
+            },
+            output: { outputBlock in
+                outputFile.write(outputBlock)
+            },
+            encryptionKey: encryptionKey,
+            hmacKey: hmacKey,
+            applyExtraPadding: true
+        )
+    }
+
+    /// Encrypt input data in memory, producing the encrypted output data.
+    ///
+    /// - parameter input: The data to encrypt.
+    /// - parameter encryptionKey: The key to encrypt with; the AES key and the hmac key concatenated together.
+    ///     (The same format as ``EncryptionMetadata/key``). A random key will be generated if none is provided.
+    ///
+    /// - returns: The encrypted data prefixed with the random iv and postfixed with the hmac. The ciphertext
+    /// is padded using standard pkcs7 padding but NOT with any custom padding applied to the plaintext prior to encryption.
+    static func encrypt(
+        _ input: Data,
+        encryptionKey inputKey: Data? = nil
+    ) throws -> (Data, EncryptionMetadata) {
+        // The metadata "key" is actually a concatentation of the
+        // encryption key and the hmac key.
+        let encryptionKey = inputKey?.prefix(aesKeySize) ?? generateRandomBytes(UInt(aesKeySize))
+        let hmacKey = inputKey?.suffix(hmac256KeyLength) ?? generateRandomBytes(UInt(hmac256KeyLength))
+
+        var outputData = Data()
+        let encryptionMetadata = try _encryptAttachment(
+            enumerateInputInBlocks: { closure in
+                // Just run the whole input at once; its already in memory.
+                try closure(input)
+                return UInt(input.count)
+            },
+            output: { outputBlock in
+                outputData.append(outputBlock)
+            },
+            encryptionKey: encryptionKey,
+            hmacKey: hmacKey,
+            applyExtraPadding: false
+        )
+        return (outputData, encryptionMetadata)
+    }
+
+    /// Encrypt an attachment source to an output sink.
+    ///
+    /// - parameter enumerateInputInBlocks: The caller should enumerate blocks of the plaintext
+    /// input one at a time (size up to the caller) until the entire input has been provided, and then return the
+    /// byte length of the plaintext input.
+    /// - parameter output: Called by this method with each chunk of output ciphertext data.
+    /// - parameter encryptionKey: The key used for encryption. Must be of byte length ``Cryptography/aesKeySize``.
+    /// - parameter hmacKey: The key used for hmac. Must be of byte length ``Cryptography/hmac256KeyLength``.
+    /// - parameter applyExtraPadding: If true, additional padding is applied _before_ pkcs7 padding to obfuscate
+    /// the size of the encrypted file. If false, only standard pkcs7 padding is used.
+    private static func _encryptAttachment(
+        // Run the closure on blocks of the input until complete and then return input plaintext length.
+        enumerateInputInBlocks: ((Data) throws -> Void) throws -> UInt,
+        output: @escaping (Data) -> Void,
+        encryptionKey: Data,
+        hmacKey: Data,
+        applyExtraPadding: Bool
+    ) throws -> EncryptionMetadata {
+
+        var totalOutputOffset: Int = 0
+        let output: (Data) -> Void = { outputData in
+            totalOutputOffset += outputData.count
+            output(outputData)
+        }
+
+        let iv = generateRandomBytes(UInt(aescbcIVLength))
 
         var hmacContext = try HmacContext(key: hmacKey)
         var digestContext = SHA256DigestContext()
@@ -216,32 +290,31 @@ public extension Cryptography {
         // in both the hmac and digest.
         try hmacContext.update(iv)
         try digestContext.update(iv)
-        outputFile.write(iv)
+        output(iv)
 
         let unpaddedPlaintextLength: UInt
 
         // Encrypt the file by enumerating blocks. We want to keep our
         // memory footprint as small as possible during encryption.
         do {
-            try inputFile.enumerateInBlocks { plaintextDataBlock in
+            unpaddedPlaintextLength = try enumerateInputInBlocks { plaintextDataBlock in
                 let ciphertextBlock = try cipherContext.update(plaintextDataBlock)
 
                 try hmacContext.update(ciphertextBlock)
                 try digestContext.update(ciphertextBlock)
-                outputFile.write(ciphertextBlock)
+                output(ciphertextBlock)
             }
 
             // Add zero padding to the plaintext attachment data if necessary.
-            unpaddedPlaintextLength = UInt(inputFile.offsetInFile)
             let paddedPlaintextLength = paddedSize(unpaddedSize: unpaddedPlaintextLength)
-            if paddedPlaintextLength > unpaddedPlaintextLength {
+            if applyExtraPadding, paddedPlaintextLength > unpaddedPlaintextLength {
                 let ciphertextBlock = try cipherContext.update(
                     Data(repeating: 0, count: Int(paddedPlaintextLength - unpaddedPlaintextLength))
                 )
 
                 try hmacContext.update(ciphertextBlock)
                 try digestContext.update(ciphertextBlock)
-                outputFile.write(ciphertextBlock)
+                output(ciphertextBlock)
             }
 
             // Finalize the encryption and write out the last block.
@@ -252,7 +325,7 @@ public extension Cryptography {
 
             try hmacContext.update(finalCiphertextBlock)
             try digestContext.update(finalCiphertextBlock)
-            outputFile.write(finalCiphertextBlock)
+            output(finalCiphertextBlock)
         }
 
         // Calculate our HMAC. This will be used to verify the
@@ -264,7 +337,7 @@ public extension Cryptography {
         // receiver to use for verification. We also include
         // it in the digest.
         try digestContext.update(hmac)
-        outputFile.write(hmac)
+        output(hmac)
 
         // Calculate our digest. This will be used to verify
         // the data after decryption.
@@ -274,7 +347,7 @@ public extension Cryptography {
         return EncryptionMetadata(
             key: encryptionKey + hmacKey,
             digest: digest,
-            length: Int(outputFile.offsetInFile),
+            length: totalOutputOffset,
             plaintextLength: Int(unpaddedPlaintextLength)
         )
     }

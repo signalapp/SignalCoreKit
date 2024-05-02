@@ -107,6 +107,32 @@ class CryptographyTestsSwift: XCTestCase {
         XCTAssertEqual(plaintextData, decryptedData)
     }
 
+    func test_attachmentEncryptionInMemoryAndDecryption() throws {
+        let temporaryDirectory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        let encryptedFile = temporaryDirectory.appendingPathComponent(UUID().uuidString)
+
+        let plaintextData = Data.data(fromHex: "6E6F7261207761732068657265")!
+        let (encryptedData, metadata) = try Cryptography.encrypt(plaintextData)
+        try encryptedData.write(to: encryptedFile)
+
+        var decryptedData = try Cryptography.decryptFile(
+            at: encryptedFile,
+            // Only provide the key; verify that we can decrypt
+            // without digest or plaintext length
+            metadata: .init(key: metadata.key)
+        )
+
+        XCTAssertEqual(plaintextData, decryptedData)
+
+        // Attempt with the digest and plaintext length; that should work too.
+        decryptedData = try Cryptography.decryptAttachment(
+            at: encryptedFile,
+            metadata: metadata
+        )
+
+        XCTAssertEqual(plaintextData, decryptedData)
+    }
+
     func test_attachmentEncryptionAndDecryptionWithGarbageInFile() throws {
         let temporaryDirectory = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         let plaintextFile = temporaryDirectory.appendingPathComponent(UUID().uuidString)
